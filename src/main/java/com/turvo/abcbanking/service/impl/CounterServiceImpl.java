@@ -13,7 +13,6 @@ import com.turvo.abcbanking.model.Counter;
 import com.turvo.abcbanking.repository.CounterRepository;
 import com.turvo.abcbanking.service.BranchService;
 import com.turvo.abcbanking.service.CounterService;
-import com.turvo.abcbanking.service.RoleService;
 import com.turvo.abcbanking.service.UserService;
 import com.turvo.abcbanking.utils.ApplicationConstants;
 
@@ -24,16 +23,13 @@ import com.turvo.abcbanking.utils.ApplicationConstants;
  *
  */
 @Service("counterService")
-public class CounterServiceImpl implements CounterService{
+public class CounterServiceImpl extends BaseServiceImpl implements CounterService{
 
 	@Autowired
 	BranchService branchService;
 	
 	@Autowired
 	UserService userService;
-	
-	@Autowired
-	RoleService roleService;
 	
 	@Autowired
 	CounterRepository counterRepository;
@@ -51,7 +47,7 @@ public class CounterServiceImpl implements CounterService{
 		Branch branch =  branchService.getBranch(branchId);
 		if(Objects.isNull(branch))
 			throw new BusinessRuntimeException(ApplicationConstants.ERR_BRANCH_NOT_EXIST);
-		if(!branch.getManagerId().equals(creatorId))
+		if(!creatorId.equals(branch.getManagerId()))
 			throw new BusinessRuntimeException(ApplicationConstants.ERR_ACCESS_DENIED);
 		if(Objects.isNull(userService.getUser(counter.getCurrentOperator())))
 			throw new BusinessRuntimeException(ApplicationConstants.ERR_OPERATOR_NOT_EXIST);
@@ -68,7 +64,7 @@ public class CounterServiceImpl implements CounterService{
 		Branch branch =  branchService.getBranch(branchId);
 		if(Objects.isNull(branch))
 			throw new BusinessRuntimeException(ApplicationConstants.ERR_BRANCH_NOT_EXIST);
-		if(!branch.getManagerId().equals(assignerId))
+		if(!assignerId.equals(branch.getManagerId()))
 			throw new BusinessRuntimeException(ApplicationConstants.ERR_ACCESS_DENIED);
 		if(Objects.isNull(userService.getUser(operatorId)))
 			throw new BusinessRuntimeException(ApplicationConstants.ERR_OPERATOR_NOT_EXIST);

@@ -19,8 +19,10 @@ public class ApplicationConstants {
 	public static final String ERR_ACCESS_DENIED = "Access Denied";
 	public static final String ERR_NEED_AUTHORIZATION = "Operation needs authorization";
 	public static final String ERR_USER_NOT_EXIST = "User doesn't exist.";
+	public static final String ERR_USER_ID_EXIST = "UserId already exists";
 	
 	public static final String ROLE_ASSIGN_ROLES = "ASSIGN_ROLES";
 	public static final String ROLE_ADD_NEW_BRANCH = "ADD_NEW_BRANCH";
+	public static final String ROLE_ADD_NEW_USER = "ADD_NEW_USER";
 
 }
