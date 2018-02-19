@@ -2,7 +2,6 @@ package com.turvo.abcbanking.service.impl;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -17,6 +16,7 @@ import com.turvo.abcbanking.repository.RoleRepository;
 import com.turvo.abcbanking.repository.UserRepository;
 import com.turvo.abcbanking.repository.UserXRoleRepository;
 import com.turvo.abcbanking.service.RoleService;
+import com.turvo.abcbanking.utils.ApplicationConstants;
 
 /**
  * Service implementation for Role operations
@@ -25,7 +25,7 @@ import com.turvo.abcbanking.service.RoleService;
  *
  */
 @Service("roleService")
-public class RoleServiceImpl implements RoleService{
+public class RoleServiceImpl extends BaseServiceImpl implements RoleService{
 	
 	@Autowired
 	UserRepository userRepository;
@@ -37,26 +37,23 @@ public class RoleServiceImpl implements RoleService{
 	UserXRoleRepository userXroleRepository;
 
 	@Override
-	public void checkAccess(String userId, String role) {
-		if(Objects.isNull(userId) || userId.equals(""))
-			throw new BusinessRuntimeException("Operation needs authorization");
-		if(roleRepository.checkAccess(userId, role) == 0)
-			throw new BusinessRuntimeException("Access Denied");
+	public Boolean checkAccessForUser(String userId, String role) {
+		return roleRepository.checkAccess(userId, role) != 0;
 	}
 	
 	@Override
 	public List<Role> getUserRoles(String userId) {
 		if(!userRepository.exists(userId))
-			throw new BusinessRuntimeException("User doesn't exist.");
+			throw new BusinessRuntimeException(ApplicationConstants.ERR_USER_NOT_EXIST);
 		return roleRepository.getRolesForUser(userId);
 	}
 
 	@Override
 	@Transactional(readOnly = false)
 	public List<Role> assignRolesToUser(String assignerId, String userId, List<Role> roles) {
-		checkAccess(assignerId, "ASSIGN_ROLES");
+		checkAccess(assignerId, ApplicationConstants.ROLE_ASSIGN_ROLES);
 		if(!userRepository.exists(userId))
-			throw new BusinessRuntimeException("User doesn't exist.");
+			throw new BusinessRuntimeException(ApplicationConstants.ERR_USER_NOT_EXIST);
 		List<String> names = roles.stream().map(Role::getName).collect(Collectors.toList());
 		List<Role> assignableRoles = roleRepository.findByNameIn(names);
 		List<UserXRole> assignedRoles = userXroleRepository.findByUserId(userId);

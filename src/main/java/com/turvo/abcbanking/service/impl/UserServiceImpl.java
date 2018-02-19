@@ -9,7 +9,6 @@ import org.springframework.transaction.annotation.Transactional;
 import com.turvo.abcbanking.exception.BusinessRuntimeException;
 import com.turvo.abcbanking.model.User;
 import com.turvo.abcbanking.repository.UserRepository;
-import com.turvo.abcbanking.service.RoleService;
 import com.turvo.abcbanking.service.UserService;
 
 /**
@@ -19,13 +18,10 @@ import com.turvo.abcbanking.service.UserService;
  *
  */
 @Service("userService")
-public class UserServiceImpl implements UserService {
+public class UserServiceImpl extends BaseServiceImpl implements UserService{
 
 	@Autowired
 	UserRepository userRepository;
-	
-	@Autowired
-	RoleService roleService;
 	
 	@Override
 	public List<User> getAllUsers() {
@@ -40,7 +36,7 @@ public class UserServiceImpl implements UserService {
 	@Override
 	@Transactional(readOnly = false)
 	public User createNewUser(String creatorId, User user) {
-		roleService.checkAccess(creatorId, "ADD_NEW_USER");
+		checkAccess(creatorId, "ADD_NEW_USER");
 		if(userRepository.exists(user.getUserId()))
 			throw new BusinessRuntimeException("UserId already exists");
 		user.setCreatedBy(creatorId);

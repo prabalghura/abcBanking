@@ -17,8 +17,9 @@ public interface RoleService {
 	 * 
 	 * @param userId
 	 * @param role
+	 * @return true if access is present false otherwise
 	 */
-	public void checkAccess(String userId, String role);
+	public Boolean checkAccessForUser(String userId, String role);
 	
 	/**
 	 * Gets all the roles assigned to a user

@@ -11,8 +11,8 @@ import com.turvo.abcbanking.exception.BusinessRuntimeException;
 import com.turvo.abcbanking.model.Branch;
 import com.turvo.abcbanking.repository.BranchRepository;
 import com.turvo.abcbanking.service.BranchService;
-import com.turvo.abcbanking.service.RoleService;
 import com.turvo.abcbanking.service.UserService;
+import com.turvo.abcbanking.utils.ApplicationConstants;
 
 /**
  * Service implementation for Branch operations
@@ -21,13 +21,10 @@ import com.turvo.abcbanking.service.UserService;
  *
  */
 @Service("branchService")
-public class BranchServiceImpl implements BranchService {
+public class BranchServiceImpl extends BaseServiceImpl implements BranchService {
 
 	@Autowired
 	BranchRepository branchRepository;
-	
-	@Autowired
-	RoleService roleService;
 	
 	@Autowired
 	UserService userService;
@@ -45,9 +42,9 @@ public class BranchServiceImpl implements BranchService {
 	@Override
 	@Transactional(readOnly = false)
 	public Branch createNewBranch(String creatorId, Branch branch) {
-		roleService.checkAccess(creatorId, "ADD_NEW_BRANCH");
+		checkAccess(creatorId, ApplicationConstants.ROLE_ADD_NEW_BRANCH);
 		if(Objects.isNull(userService.getUser(branch.getManagerId())))
-			throw new BusinessRuntimeException("Manager does not exist");
+			throw new BusinessRuntimeException(ApplicationConstants.ERR_MANAGER_NOT_EXIST);
 		branch.setLastModifiedBy(creatorId);
 		return branchRepository.saveAndFlush(branch);
 	}
@@ -55,12 +52,12 @@ public class BranchServiceImpl implements BranchService {
 	@Override
 	@Transactional(readOnly = false)
 	public Branch assignManager(String assignerId, Long branchId, String managerId) {
-		roleService.checkAccess(assignerId, "ADD_NEW_BRANCH");
+		checkAccess(assignerId, ApplicationConstants.ROLE_ADD_NEW_BRANCH);
 		if(Objects.isNull(userService.getUser(managerId)))
-			throw new BusinessRuntimeException("Manager does not exist");
+			throw new BusinessRuntimeException(ApplicationConstants.ERR_MANAGER_NOT_EXIST);
 		Branch branch = getBranch(branchId);
 		if(Objects.isNull(branch))
-			throw new BusinessRuntimeException("Branch does not exist");
+			throw new BusinessRuntimeException(ApplicationConstants.ERR_BRANCH_NOT_EXIST);
 		branch.setManagerId(managerId);
 		branch.setLastModifiedBy(assignerId);
 		return branchRepository.saveAndFlush(branch);
