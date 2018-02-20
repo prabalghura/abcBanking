@@ -2,7 +2,6 @@ package com.turvo.abcbanking.repository;
 
 import java.util.List;
 
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
@@ -16,7 +15,7 @@ import com.turvo.abcbanking.utils.CustomQueries;
  *
  */
 @Repository
-public interface CounterRepository extends JpaRepository<Counter, Long>{
+public interface CounterRepository extends BaseRepository<Counter, Long>{
 	
 	/**
 	 * For finding list of counters in a branch

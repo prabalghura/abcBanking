@@ -2,7 +2,6 @@ package com.turvo.abcbanking.repository;
 
 import java.util.List;
 
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
@@ -16,7 +15,7 @@ import com.turvo.abcbanking.utils.CustomQueries;
  *
  */
 @Repository
-public interface RoleRepository extends JpaRepository<Role, Integer> {
+public interface RoleRepository extends BaseRepository<Role, Integer> {
 	
 	/**
 	 * Checks whether user holds the specifed role

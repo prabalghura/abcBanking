@@ -1,6 +1,5 @@
 package com.turvo.abcbanking.repository;
 
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import com.turvo.abcbanking.model.Branch;
@@ -12,5 +11,5 @@ import com.turvo.abcbanking.model.Branch;
  *
  */
 @Repository
-public interface BranchRepository extends JpaRepository<Branch, Long>{
+public interface BranchRepository extends BaseRepository<Branch, Long>{
 }

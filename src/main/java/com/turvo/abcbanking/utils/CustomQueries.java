@@ -19,4 +19,7 @@ public class CustomQueries {
 			+ "and uxr.userId = ?1";
 	
 	public static final String COUNTER_MAX_NUMBER = "select coalesce(max(c.number), 0) from Counter c where c.branchId = ?1";
+	
+	public static final String WORKFLOW_FOR_SERVICE = "select step from ServiceXServiceStep sxs, ServiceStep step "
+			+ "where sxs.stepId=step.id and sxs.serviceId=?1 order by sxs.order";
 }
