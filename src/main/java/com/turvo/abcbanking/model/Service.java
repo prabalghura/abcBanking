@@ -26,7 +26,6 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
  * @author Prabal Ghura
  *
  */
-
 @Entity
 @Table(name = "SERVICE")
 public class Service {
@@ -51,7 +50,7 @@ public class Service {
 	
 	@Transient
 	@JsonInclude(Include.NON_EMPTY)
-    List<ServiceStep> steps = new ArrayList<>();
+    private List<ServiceStep> steps = new ArrayList<>();
 
 	public Long getId() {
 		return id;

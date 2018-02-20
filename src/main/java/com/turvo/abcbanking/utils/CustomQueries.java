@@ -22,4 +22,7 @@ public class CustomQueries {
 	
 	public static final String WORKFLOW_FOR_SERVICE = "select step from ServiceXServiceStep sxs, ServiceStep step "
 			+ "where sxs.stepId=step.id and sxs.serviceId=?1 order by sxs.order";
+	
+	public static final String STEPS_FOR_COUNTER = "select step from CounterXServiceStep cxs, ServiceStep step "
+			+ "where cxs.stepId=step.id and cxs.counterId=?1";
 }

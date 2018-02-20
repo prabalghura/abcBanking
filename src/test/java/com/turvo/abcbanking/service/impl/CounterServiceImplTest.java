@@ -56,6 +56,8 @@ public class CounterServiceImplTest {
 	 */
 	@Test
 	public final void testGetAllBranchCountersInvalidBranch() {
+		Mockito.when(branchService.getBranch(1L)).thenReturn(null);
+		Mockito.when(counterRepository.findByBranchId(1L)).thenReturn(new ArrayList<>());
 		exception.expect(BusinessRuntimeException.class);
 		exception.expectMessage(ApplicationConstants.ERR_BRANCH_NOT_EXIST);
 		counterService.getAllBranchCounters(1L);
@@ -76,9 +78,14 @@ public class CounterServiceImplTest {
 	 */
 	@Test
 	public final void testCreateNewCounterInvalidBranch() {
+		Branch branch = new Branch();
+		branch.setManagerId("userId");
+		Counter counter = new Counter();
+		counter.setCurrentOperator("operator1");
+		Mockito.when(branchService.getBranch(1L)).thenReturn(null);
 		exception.expect(BusinessRuntimeException.class);
 		exception.expectMessage(ApplicationConstants.ERR_BRANCH_NOT_EXIST);
-		counterService.createNewCounter("userId", 1L, new Counter());
+		counterService.createNewCounter("userId", 1L, counter);
 	}
 	
 	/**
@@ -86,10 +93,14 @@ public class CounterServiceImplTest {
 	 */
 	@Test
 	public final void testCreateNewCounterWithoutAccess() {
-		Mockito.when(branchService.getBranch(1L)).thenReturn(new Branch());
+		Branch branch = new Branch();
+		branch.setManagerId("user2");
+		Counter counter = new Counter();
+		counter.setCurrentOperator("operator1");
+		Mockito.when(branchService.getBranch(1L)).thenReturn(branch);
 		exception.expect(BusinessRuntimeException.class);
 		exception.expectMessage(ApplicationConstants.ERR_ACCESS_DENIED);
-		counterService.createNewCounter("userId", 1L, new Counter());
+		counterService.createNewCounter("userId", 1L, counter);
 	}
 	
 	/**
@@ -99,10 +110,12 @@ public class CounterServiceImplTest {
 	public final void testCreateNewCounterInvalidOperator() {
 		Branch branch = new Branch();
 		branch.setManagerId("userId");
+		Counter counter = new Counter();
+		counter.setCurrentOperator(null);
 		Mockito.when(branchService.getBranch(1L)).thenReturn(branch);
 		exception.expect(BusinessRuntimeException.class);
 		exception.expectMessage(ApplicationConstants.ERR_OPERATOR_NOT_EXIST);
-		counterService.createNewCounter("userId", 1L, new Counter());
+		counterService.createNewCounter("userId", 1L, counter);
 	}
 	
 	/**
@@ -124,6 +137,12 @@ public class CounterServiceImplTest {
 	 */
 	@Test
 	public final void testAssignOperatorInvalidBranch() {
+		Branch branch = new Branch();
+		branch.setId(1L);
+		branch.setManagerId("userId");
+		Mockito.when(branchService.getBranch(1L)).thenReturn(null);
+		Mockito.when(userService.getUser("operator1")).thenReturn(new User());
+		Mockito.when(counterRepository.findFirstByBranchIdAndNumber(1L, 1)).thenReturn(new Counter());
 		exception.expect(BusinessRuntimeException.class);
 		exception.expectMessage(ApplicationConstants.ERR_BRANCH_NOT_EXIST);
 		counterService.assignOperator("userId", 1L, 1, "operator1");
@@ -134,7 +153,12 @@ public class CounterServiceImplTest {
 	 */
 	@Test
 	public final void testAssignOperatorWithoutAccess() {
-		Mockito.when(branchService.getBranch(1L)).thenReturn(new Branch());
+		Branch branch = new Branch();
+		branch.setId(1L);
+		branch.setManagerId("user2");
+		Mockito.when(branchService.getBranch(1L)).thenReturn(branch);
+		Mockito.when(userService.getUser("operator1")).thenReturn(new User());
+		Mockito.when(counterRepository.findFirstByBranchIdAndNumber(1L, 1)).thenReturn(new Counter());
 		exception.expect(BusinessRuntimeException.class);
 		exception.expectMessage(ApplicationConstants.ERR_ACCESS_DENIED);
 		counterService.assignOperator("userId", 1L, 1, "operator1");
@@ -146,8 +170,11 @@ public class CounterServiceImplTest {
 	@Test
 	public final void testAssignOperatorInvalidOperator() {
 		Branch branch = new Branch();
+		branch.setId(1L);
 		branch.setManagerId("userId");
 		Mockito.when(branchService.getBranch(1L)).thenReturn(branch);
+		Mockito.when(userService.getUser("operator1")).thenReturn(null);
+		Mockito.when(counterRepository.findFirstByBranchIdAndNumber(1L, 1)).thenReturn(new Counter());
 		exception.expect(BusinessRuntimeException.class);
 		exception.expectMessage(ApplicationConstants.ERR_OPERATOR_NOT_EXIST);
 		counterService.assignOperator("userId", 1L, 1, "operator1");
@@ -159,9 +186,11 @@ public class CounterServiceImplTest {
 	@Test
 	public final void testAssignOperatorInvalidCounter() {
 		Branch branch = new Branch();
+		branch.setId(1L);
 		branch.setManagerId("userId");
 		Mockito.when(branchService.getBranch(1L)).thenReturn(branch);
 		Mockito.when(userService.getUser("operator1")).thenReturn(new User());
+		Mockito.when(counterRepository.findFirstByBranchIdAndNumber(1L, 1)).thenReturn(null);
 		exception.expect(BusinessRuntimeException.class);
 		exception.expectMessage(ApplicationConstants.ERR_COUNTER_NOT_EXIST);
 		counterService.assignOperator("userId", 1L, 1, "operator1");
@@ -173,6 +202,7 @@ public class CounterServiceImplTest {
 	@Test
 	public final void testAssignOperatorValid() {
 		Branch branch = new Branch();
+		branch.setId(1L);
 		branch.setManagerId("userId");
 		Mockito.when(branchService.getBranch(1L)).thenReturn(branch);
 		Mockito.when(userService.getUser("operator1")).thenReturn(new User());

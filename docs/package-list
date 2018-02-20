@@ -1,5 +1,6 @@
 com.turvo.abcBanking
 com.turvo.abcbanking
+com.turvo.abcbanking.config
 com.turvo.abcbanking.controller
 com.turvo.abcbanking.exception
 com.turvo.abcbanking.model

@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.turvo.abcbanking.model.Counter;
+import com.turvo.abcbanking.model.ServiceStep;
 import com.turvo.abcbanking.service.CounterService;
 
 /**
@@ -66,5 +67,32 @@ public class CounterController {
 	public Counter assignOperatorToCounter(@RequestHeader("userId") String assignerId, @PathVariable(value = "id") Long branchId, 
 			@PathVariable(value = "counterId") Integer counterNumber, @PathVariable(value = "operatorId") String operatorId) {
 		return counterService.assignOperator(assignerId, branchId, counterNumber, operatorId);
+	}
+	
+	/**
+	 * For getting a specific counter in a branch with all the service steps it currently serves
+	 * 
+	 * @param branchId
+	 * @param counterNumber
+	 * @return counter instance if exists
+	 */
+	@RequestMapping("/branches/{id}/counters/{counterId}")
+	public Counter getBranchCounter(@PathVariable(value = "id") Long branchId, @PathVariable(value = "counterId") Integer counterNumber) {
+		return counterService.getBranchCounter(branchId, counterNumber);
+	}
+	
+	/**
+	 * Assigns a counter service steps it can service (exclusive addition)
+	 * 
+	 * @param assignerId
+	 * @param branchId
+	 * @param counterNumber
+	 * @param steps
+	 * @return updated counter instance
+	 */
+	@PostMapping("/branches/{id}/counters/{counterId}/steps")
+	public Counter assignStepsToCounter(@RequestHeader("userId") String assignerId, @PathVariable(value = "id") Long branchId, 
+			@PathVariable(value = "counterId") Integer counterNumber, @Valid @RequestBody List<ServiceStep> steps) {
+		return counterService.assignSteps(assignerId, branchId, counterNumber, steps);
 	}
 }

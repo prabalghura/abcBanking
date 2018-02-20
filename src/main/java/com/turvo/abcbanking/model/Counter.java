@@ -1,6 +1,8 @@
 package com.turvo.abcbanking.model;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -12,11 +14,14 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.annotations.UpdateTimestamp;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 /**
  * Model class to represent Counter
@@ -59,6 +64,10 @@ public class Counter {
     @Temporal(TemporalType.TIMESTAMP)
     @JsonIgnore
     private Date modifiedDate;
+	
+	@Transient
+	@JsonInclude(Include.NON_EMPTY)
+    private List<ServiceStep> steps = new ArrayList<>();
 
 	public Long getId() {
 		return id;
@@ -114,5 +123,13 @@ public class Counter {
 
 	public void setModifiedDate(Date modifiedDate) {
 		this.modifiedDate = modifiedDate;
+	}
+
+	public List<ServiceStep> getSteps() {
+		return steps;
+	}
+
+	public void setSteps(List<ServiceStep> steps) {
+		this.steps = steps;
 	}
 }
