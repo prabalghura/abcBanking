@@ -1,0 +1,76 @@
+package com.turvo.abcbanking.model;
+
+import java.util.Date;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+import org.hibernate.annotations.CreationTimestamp;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+/**
+ * Model class to represent Service step
+ * 
+ * @author Prabal Ghura
+ *
+ */
+@Entity
+@Table(name = "SERVICE_STEP")
+public class ServiceStep {
+	
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "ID", insertable = false, updatable = false)
+    private Long id;
+	
+	@Column(name = "NAME")
+	private String name;
+	
+	@Column(name = "CREATED_BY")
+	@JsonIgnore
+	private String createdBy;
+	
+	@Column(name = "CREATED_DATE", updatable = false)
+    @Temporal(TemporalType.TIMESTAMP)
+    @JsonIgnore
+    @CreationTimestamp
+    private Date createdDate;
+
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public String getCreatedBy() {
+		return createdBy;
+	}
+
+	public void setCreatedBy(String createdBy) {
+		this.createdBy = createdBy;
+	}
+
+	public Date getCreatedDate() {
+		return createdDate;
+	}
+
+	public void setCreatedDate(Date createdDate) {
+		this.createdDate = createdDate;
+	}
+}
