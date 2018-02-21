@@ -76,7 +76,7 @@ public class TokenRepositoryImpl implements TokenRepositoryCustom{
         	TokenWorkflow step = new TokenWorkflow();
     		step.setId(workflowId.longValue());
     		step.setTokenId(tokenId1.longValue());
-    		step.setCounterId(counterId1.longValue());
+    		step.setCounterId(counterId1 == null? null: counterId1.longValue());
     		step.setStepId(stepId.longValue());
     		step.setServedBy(servedBy);
     		step.setStatus(TokenWorklowStatus.valueOf(workFlowStatus));

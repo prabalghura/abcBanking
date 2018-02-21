@@ -28,14 +28,17 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 public class TokenWorkflow {
 
 	@Id
+	@JsonIgnore
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "ID", insertable = false, updatable = false)
     private Long id;
 	
 	@Column(name = "TOKEN_ID")
+	@JsonIgnore
     private Long tokenId;
 	
 	@Column(name = "COUNTER_ID")
+	@JsonIgnore
     private Long counterId;
 	
 	@Column(name = "STEP_ID")

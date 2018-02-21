@@ -99,4 +99,20 @@ public class CounterController {
 			@PathVariable(value = "counterId") Integer counterNumber, @Valid @RequestBody List<ServiceStep> steps) {
 		return counterService.assignSteps(assignerId, branchId, counterNumber, steps);
 	}
+	
+	/**
+	 * To service first token in the counter queue
+	 * 
+	 * @param executorId
+	 * @param branchId
+	 * @param counterNumber
+	 * @param comments
+	 * @return success if operation is successful
+	 */
+	@PostMapping("/branches/{id}/counters/{counterId}/service")
+	public String serviceStep(@RequestHeader("userId") String executorId, @PathVariable(value = "id") Long branchId, 
+			@PathVariable(value = "counterId") Integer counterNumber, @RequestBody String comments) {
+		counterService.serviceFirstCounter(executorId, branchId, counterNumber, comments);
+		return "SUCCESS";
+	}
 }

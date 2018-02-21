@@ -2,6 +2,8 @@ package com.turvo.abcbanking.model;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -40,6 +42,7 @@ public class Customer {
 	
 	@NotNull
 	@Column(name = "TYPE")
+	@Enumerated(EnumType.STRING)
 	private CustomerType type;
 
 	public Long getAccountNumber() {

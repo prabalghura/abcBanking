@@ -27,6 +27,8 @@ public class ApplicationConstants {
 	public static final String ERR_INVALID_SERVICE_STEP_NAME = "Service step name must not be empty";
 	public static final String ERR_INVALID_SERVICE_STEP_ID = "Service step id must not be null";
 	public static final String ERR_EMPTY_COUNTER_QUEUE = "Counter queue is empty";
+	public static final String ERR_EMPTY_SERVICE_TOKEN = "Service list must not be empty";
+	public static final String ERR_CUSTOMER_NOT_EXIST = "Customer does not exists";
 	
 	// Roles
 	public static final String ROLE_ASSIGN_ROLES = "ASSIGN_ROLES";

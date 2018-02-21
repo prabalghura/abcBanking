@@ -16,7 +16,7 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Transient;
 
-import org.springframework.data.annotation.CreatedDate;
+import org.hibernate.annotations.CreationTimestamp;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -33,6 +33,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 public class Token {
 	
 	@Id
+	@JsonIgnore
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "ID", insertable = false, updatable = false)
     private Long id;
@@ -44,12 +45,13 @@ public class Token {
 	private Integer number;
 	
 	@Column(name = "STATUS")
+	@JsonIgnore
 	@Enumerated(EnumType.STRING)
 	private TokenStatus status;
 	
 	@Column(name = "CREATED_DATE", updatable = false)
     @Temporal(TemporalType.TIMESTAMP)
-    @CreatedDate
+	@CreationTimestamp
     @JsonIgnore
     private Date createdDate;
 	

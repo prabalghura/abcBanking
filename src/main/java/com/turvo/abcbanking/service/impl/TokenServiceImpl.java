@@ -2,10 +2,12 @@ package com.turvo.abcbanking.service.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.turvo.abcbanking.exception.BusinessRuntimeException;
 import com.turvo.abcbanking.model.Branch;
 import com.turvo.abcbanking.model.Counter;
 import com.turvo.abcbanking.model.Customer;
@@ -19,6 +21,7 @@ import com.turvo.abcbanking.repository.TokenRepository;
 import com.turvo.abcbanking.repository.TokenWorkflowRepository;
 import com.turvo.abcbanking.service.BranchService;
 import com.turvo.abcbanking.service.TokenService;
+import com.turvo.abcbanking.utils.ApplicationConstants;
 
 /**
  * Service implementation for Counter operations
@@ -41,6 +44,8 @@ public class TokenServiceImpl extends BaseServiceImpl implements TokenService {
 	@Override
 	@Transactional(readOnly = false)
 	public Token createToken(Customer customer, Long branchId, List<Service> services) {
+		if(Objects.isNull(services) || services.isEmpty())
+			throw new BusinessRuntimeException(ApplicationConstants.ERR_EMPTY_SERVICE_TOKEN);
 		List<ServiceStep> steps = new ArrayList<>();
 		services.forEach(service -> steps.addAll(service.getSteps()));
 		
@@ -84,6 +89,7 @@ public class TokenServiceImpl extends BaseServiceImpl implements TokenService {
 		 * 
 		 */
 		workflowSteps = tokenWorkflowRepository.save(workflowSteps);
+		tokenWorkflowRepository.flush();
 		
 		token.setType(customer.getType());
 		token.setSteps(workflowSteps);
