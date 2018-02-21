@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.turvo.abcbanking.model.Branch;
+import com.turvo.abcbanking.model.CustomerType;
+import com.turvo.abcbanking.model.Service;
 import com.turvo.abcbanking.service.BranchService;
 
 /**
@@ -73,5 +75,17 @@ public class BranchController {
 	public Branch assignManagerToBranch(@RequestHeader("userId") String assignerId, 
 			@PathVariable(value = "id") Long branchId, @PathVariable(value = "managerId") String managerId) {
 	    return branchService.assignManager(assignerId, branchId, managerId);
+	}
+	
+	/**
+	 * For getting all the services served by a Branch
+	 * 
+	 * @param branchId
+	 * @param type
+	 * @return list of services
+	 */
+	@RequestMapping("/branches/{id}/services/{type}")
+	public List<Service> getBranch(@PathVariable(value = "id") Long branchId, @PathVariable(value = "type") CustomerType type) {
+		return branchService.getServices(branchId, type);
 	}
 }

@@ -4,12 +4,14 @@ import java.util.List;
 import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.turvo.abcbanking.exception.BusinessRuntimeException;
 import com.turvo.abcbanking.model.Branch;
+import com.turvo.abcbanking.model.CustomerType;
+import com.turvo.abcbanking.model.Service;
 import com.turvo.abcbanking.repository.BranchRepository;
+import com.turvo.abcbanking.repository.ServiceRepository;
 import com.turvo.abcbanking.service.BranchService;
 import com.turvo.abcbanking.service.UserService;
 import com.turvo.abcbanking.utils.ApplicationConstants;
@@ -20,7 +22,7 @@ import com.turvo.abcbanking.utils.ApplicationConstants;
  * @author Prabal Ghura
  *
  */
-@Service("branchService")
+@org.springframework.stereotype.Service("branchService")
 public class BranchServiceImpl extends BaseServiceImpl implements BranchService {
 
 	@Autowired
@@ -28,6 +30,9 @@ public class BranchServiceImpl extends BaseServiceImpl implements BranchService 
 	
 	@Autowired
 	UserService userService;
+	
+	@Autowired
+	ServiceRepository serviceRepository;
 	
 	@Override
 	public List<Branch> getAllBranches() {
@@ -61,5 +66,9 @@ public class BranchServiceImpl extends BaseServiceImpl implements BranchService 
 		branch.setManagerId(managerId);
 		branch.setLastModifiedBy(assignerId);
 		return branchRepository.saveAndFlush(branch);
+	}
+	
+	public List<Service> getServices(Long branchId, CustomerType type) {
+		return serviceRepository.getServicesForBranch(branchId, type);
 	}
 }

@@ -11,5 +11,5 @@ import com.turvo.abcbanking.model.Service;
  *
  */
 @Repository
-public interface ServiceRepository extends BaseRepository<Service, Long> {
+public interface ServiceRepository extends BaseRepository<Service, Long>, ServiceRepositoryCustom {
 }

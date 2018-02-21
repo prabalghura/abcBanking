@@ -38,7 +38,7 @@ public interface ServiceStepRepository extends BaseRepository<ServiceStep, Long>
 	 * To get all the service steps currently served by a counter
 	 * 
 	 * @param counterId
-	 * @return
+	 * @return list of service steps
 	 */
 	@Query(CustomQueries.STEPS_FOR_COUNTER)
 	public List<ServiceStep> findByCounterId(Long counterId);

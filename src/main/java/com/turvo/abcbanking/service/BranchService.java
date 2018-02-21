@@ -3,6 +3,8 @@ package com.turvo.abcbanking.service;
 import java.util.List;
 
 import com.turvo.abcbanking.model.Branch;
+import com.turvo.abcbanking.model.CustomerType;
+import com.turvo.abcbanking.model.Service;
 
 /**
  * Service contract/interface for Branch operations
@@ -45,4 +47,13 @@ public interface BranchService {
 	 * @return updated branch instance
 	 */
 	public Branch assignManager(String assignerId, Long branchId, String managerId);
+	
+	/**
+	 * Get all the services served by a branch
+	 * 
+	 * @param branchId
+	 * @param type
+	 * @return list of services
+	 */
+	public List<Service> getServices(Long branchId, CustomerType type);
 }
