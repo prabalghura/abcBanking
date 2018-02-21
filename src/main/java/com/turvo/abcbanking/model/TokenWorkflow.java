@@ -13,6 +13,8 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
+import org.hibernate.annotations.UpdateTimestamp;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
@@ -52,6 +54,7 @@ public class TokenWorkflow {
 	@Column(name = "SERVED_DATE")
     @Temporal(TemporalType.TIMESTAMP)
     @JsonIgnore
+    @UpdateTimestamp
     private Date servedDate;
 
 	public Long getId() {

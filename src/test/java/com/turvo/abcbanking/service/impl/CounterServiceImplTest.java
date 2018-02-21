@@ -3,9 +3,6 @@
  */
 package com.turvo.abcbanking.service.impl;
 
-import java.util.ArrayList;
-
-import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -50,28 +47,6 @@ public class CounterServiceImplTest {
 	
 	@Rule
 	public ExpectedException exception = ExpectedException.none();
-	
-	/**
-	 * Test method for {@link com.turvo.abcbanking.service.impl.CounterServiceImpl#getAllBranchCounters(java.lang.Long)}.
-	 */
-	@Test
-	public final void testGetAllBranchCountersInvalidBranch() {
-		Mockito.when(branchService.getBranch(1L)).thenReturn(null);
-		Mockito.when(counterRepository.findByBranchId(1L)).thenReturn(new ArrayList<>());
-		exception.expect(BusinessRuntimeException.class);
-		exception.expectMessage(ApplicationConstants.ERR_BRANCH_NOT_EXIST);
-		counterService.getAllBranchCounters(1L);
-	}
-	
-	/**
-	 * Test method for {@link com.turvo.abcbanking.service.impl.CounterServiceImpl#getAllBranchCounters(java.lang.Long)}.
-	 */
-	@Test
-	public final void testGetAllBranchCountersValidBranch() {
-		Mockito.when(branchService.getBranch(1L)).thenReturn(new Branch());
-		Mockito.when(counterRepository.findByBranchId(1L)).thenReturn(new ArrayList<>());
-		Assert.assertNotNull("Counter list should not be null", counterService.getAllBranchCounters(1L));
-	}
 
 	/**
 	 * Test method for {@link com.turvo.abcbanking.service.impl.CounterServiceImpl#createNewCounter(java.lang.String, java.lang.Long, com.turvo.abcbanking.model.Counter)}.

@@ -1,6 +1,8 @@
 package com.turvo.abcbanking.model;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -12,10 +14,13 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 
 import org.springframework.data.annotation.CreatedDate;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 /**
  * Model class to represent Token
@@ -47,6 +52,22 @@ public class Token {
     @CreatedDate
     @JsonIgnore
     private Date createdDate;
+	
+	@Transient
+	@JsonIgnore
+	private Long branchId;
+	
+	@Transient
+	@JsonIgnore
+	private Integer counterNumber;
+	
+	@Transient
+	@JsonIgnore
+	private CustomerType type;
+	
+	@Transient
+	@JsonInclude(Include.NON_EMPTY)
+    private List<TokenWorkflow> steps = new ArrayList<>();
 
 	public Long getId() {
 		return id;
@@ -86,5 +107,55 @@ public class Token {
 
 	public void setCreatedDate(Date createdDate) {
 		this.createdDate = createdDate;
+	}
+
+	public List<TokenWorkflow> getSteps() {
+		return steps;
+	}
+
+	public void setSteps(List<TokenWorkflow> steps) {
+		this.steps = steps;
+	}
+	
+	public List<TokenWorkflow> serviceAndGetNextPendingWorkFlowStep(String comments, String operatorId) {
+		List<TokenWorkflow> steps1 = new ArrayList<>();
+		for(TokenWorkflow step: steps) {
+			if(step.getStatus() == TokenWorklowStatus.ASSIGNED) {
+				step.setComments(comments);
+				step.setServedBy(operatorId);
+				step.setStatus(TokenWorklowStatus.COMPLETED);
+				steps1.add(step);
+			}
+			if(step.getStatus() == TokenWorklowStatus.PENDING) {
+				step.setStatus(TokenWorklowStatus.ASSIGNED);
+				steps1.add(step);
+				break;
+			}
+		}
+		return steps1;
+	}
+
+	public Integer getCounterNumber() {
+		return counterNumber;
+	}
+
+	public void setCounterNumber(Integer counterNumber) {
+		this.counterNumber = counterNumber;
+	}
+
+	public Long getBranchId() {
+		return branchId;
+	}
+
+	public void setBranchId(Long branchId) {
+		this.branchId = branchId;
+	}
+
+	public CustomerType getType() {
+		return type;
+	}
+
+	public void setType(CustomerType type) {
+		this.type = type;
 	}
 }

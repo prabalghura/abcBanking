@@ -1,4 +1,4 @@
-package com.turvo.abcbanking.repository;
+package com.turvo.abcbanking.repository.impl;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.turvo.abcbanking.model.CustomerType;
 import com.turvo.abcbanking.model.Service;
 import com.turvo.abcbanking.model.ServiceStep;
+import com.turvo.abcbanking.repository.ServiceRepositoryCustom;
 import com.turvo.abcbanking.utils.CustomQueries;
 
 /**

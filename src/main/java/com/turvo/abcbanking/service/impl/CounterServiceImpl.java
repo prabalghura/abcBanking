@@ -15,10 +15,14 @@ import com.turvo.abcbanking.model.Branch;
 import com.turvo.abcbanking.model.Counter;
 import com.turvo.abcbanking.model.CounterXServiceStep;
 import com.turvo.abcbanking.model.ServiceStep;
+import com.turvo.abcbanking.model.Token;
+import com.turvo.abcbanking.model.TokenWorkflow;
 import com.turvo.abcbanking.model.User;
 import com.turvo.abcbanking.repository.CounterRepository;
 import com.turvo.abcbanking.repository.CounterXServiceStepRepository;
 import com.turvo.abcbanking.repository.ServiceStepRepository;
+import com.turvo.abcbanking.repository.TokenRepository;
+import com.turvo.abcbanking.repository.TokenWorkflowRepository;
 import com.turvo.abcbanking.service.BranchService;
 import com.turvo.abcbanking.service.CounterService;
 import com.turvo.abcbanking.service.UserService;
@@ -31,7 +35,7 @@ import com.turvo.abcbanking.utils.ApplicationConstants;
  *
  */
 @Service("counterService")
-public class CounterServiceImpl extends BaseServiceImpl implements CounterService{
+public class CounterServiceImpl extends BaseServiceImpl implements CounterService {
 
 	@Autowired
 	BranchService branchService;
@@ -43,14 +47,33 @@ public class CounterServiceImpl extends BaseServiceImpl implements CounterServic
 	CounterRepository counterRepository;
 	
 	@Autowired
+	TokenRepository tokenRepository;
+	
+	@Autowired
+	TokenWorkflowRepository tokenWorkflowRepository;
+	
+	@Autowired
 	ServiceStepRepository serviceStepRepository;
 	
 	@Autowired
 	CounterXServiceStepRepository counterXServiceStepRepository;
 	
 	@Override
-	public List<Counter> getAllBranchCounters(Long branchId) {
-		return counterRepository.findByBranchId(getBranch(branchId).getId());
+	public List<Counter> getBranchCountersFromDB(Long branchId) {
+		List<Counter> counterList = counterRepository.findByBranchId(branchId);
+		List<Counter> resultList = new ArrayList<>();
+		
+		counterList.forEach(counter -> resultList.add(getCounterFull(counter)));
+		
+		return resultList;
+	}
+	
+	private Counter getCounterFull(Counter counter) {
+		counter.setSteps(serviceStepRepository.findByCounterId(counter.getId()));
+		List<Token> tokens = tokenRepository.getTokensForCounter(counter.getId());
+		tokens.forEach(counter::addToken);
+		
+		return counter;
 	}
 
 	@Override
@@ -62,8 +85,10 @@ public class CounterServiceImpl extends BaseServiceImpl implements CounterServic
 		counter.setBranchId(branchId);
 		counter.setNumber(counterRepository.getMaxCounterNumber(branchId) + 1);
 		counter.setLastModifiedBy(creatorId);
+		counter = getCounterFull(counterRepository.saveAndFlush(counter));
 		
-		return counterRepository.saveAndFlush(counter);
+		branchService.updateCounter(counter);
+		return counter;
 	}
 
 	@Override
@@ -72,18 +97,12 @@ public class CounterServiceImpl extends BaseServiceImpl implements CounterServic
 		Branch branch =  getBranch(branchId);
 		checkAccess(assignerId, branch);
 		getOperator(operatorId);
-		Counter counter = getCounter(branch, counterNumber);
+		Counter counter = getCounter(branchId, counterNumber);
 		counter.setCurrentOperator(operatorId);
 		counter.setLastModifiedBy(assignerId);
+		counter = getCounterFull(counterRepository.saveAndFlush(counter));
 		
-		return counterRepository.saveAndFlush(counter);
-	}
-
-	@Override
-	public Counter getBranchCounter(Long branchId, Integer counterNumber) {
-		Counter counter = counterRepository.findFirstByBranchIdAndNumber(branchId, counterNumber);
-		if(!Objects.isNull(counter))
-			counter.setSteps(serviceStepRepository.findByCounterId(counter.getId()));
+		branchService.updateCounter(counter);
 		return counter;
 	}
 
@@ -92,7 +111,7 @@ public class CounterServiceImpl extends BaseServiceImpl implements CounterServic
 	public Counter assignSteps(String assignerId, Long branchId, Integer counterNumber, List<ServiceStep> steps) {
 		Branch branch =  getBranch(branchId);
 		checkAccess(assignerId, branch);
-		Counter counter = getCounter(branch, counterNumber);
+		Counter counter = getCounter(branchId, counterNumber);
 		List<Long> stepIds = getStepIdstoBeAdded(counter.getId(), steps);
 		
 		List<CounterXServiceStep> toBeAssignedSteps = new ArrayList<>();
@@ -101,8 +120,31 @@ public class CounterServiceImpl extends BaseServiceImpl implements CounterServic
 		counterXServiceStepRepository.save(toBeAssignedSteps);
 		counterXServiceStepRepository.flush();
 		
-		counter.setSteps(serviceStepRepository.findByCounterId(counter.getId()));
-		return counter;
+		branch = branchService.updateBranch(branch.getManagerId(), branchId);
+		
+		return branch.getCounter(counterNumber);
+	}
+	
+	@Override
+	@Transactional(readOnly = false)
+	public void serviceFirstCounter(String executorId, Long branchId, Integer counterNumber, String comments) {
+		Counter counter = branchService.getBranch(branchId).getCounter(counterNumber);
+		checkOperatorAccess(executorId, counter);
+		Token token = counter.pullToken();
+		branchService.updateCounter(counter);
+		
+		List<TokenWorkflow> steps1 = token.serviceAndGetNextPendingWorkFlowStep(comments, counter.getCurrentOperator());
+		
+		if(steps1.size()>1) {
+			Long stepId = steps1.get(1).getStepId();
+			Counter nextCounter = branchService.getBestCounter(branchId, token.getType(), stepId);
+			steps1.get(1).setCounterId(nextCounter.getId());
+			nextCounter.addToken(token);
+			
+			branchService.updateCounter(nextCounter);
+		}
+		tokenWorkflowRepository.save(steps1);
+		tokenWorkflowRepository.flush();
 	}
 	
 	private List<Long> getStepIdstoBeAdded(Long counterId, List<ServiceStep> steps) {
@@ -126,6 +168,11 @@ public class CounterServiceImpl extends BaseServiceImpl implements CounterServic
 		return stepsIdList.stream().filter(id -> !stepIds1.contains(id)).collect(Collectors.toList());
 	}
 	
+	private void checkOperatorAccess(String userId, Counter counter) {
+		if(!counter.getCurrentOperator().equals(userId))
+			throw new BusinessRuntimeException(ApplicationConstants.ERR_ACCESS_DENIED);
+	}
+	
 	private User getOperator(String operatorId) {
 		User operator = userService.getUser(operatorId);
 		if(Objects.isNull(operator))
@@ -145,10 +192,11 @@ public class CounterServiceImpl extends BaseServiceImpl implements CounterServic
 		return branch;
 	}
 	
-	private Counter getCounter(Branch branch, Integer counterNumber) {
-		Counter counter = counterRepository.findFirstByBranchIdAndNumber(branch.getId(), counterNumber);
+	private Counter getCounter(Long branchId, Integer counterNumber) {
+		Counter counter = branchService.getBranch(branchId).getCounter(counterNumber);
 		if(Objects.isNull(counter))
 			throw new BusinessRuntimeException(ApplicationConstants.ERR_COUNTER_NOT_EXIST);
 		return counter;
 	}
 }
+

@@ -3,6 +3,9 @@ package com.turvo.abcbanking.model;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -22,6 +25,8 @@ import org.hibernate.annotations.UpdateTimestamp;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.turvo.abcbanking.exception.BusinessRuntimeException;
+import com.turvo.abcbanking.utils.ApplicationConstants;
 
 /**
  * Model class to represent Counter
@@ -67,7 +72,11 @@ public class Counter {
 	
 	@Transient
 	@JsonInclude(Include.NON_EMPTY)
-    private List<ServiceStep> steps = new ArrayList<>();
+	private List<ServiceStep> steps = new ArrayList<>();
+	
+	@Transient
+	@JsonInclude(Include.NON_EMPTY)
+    private ConcurrentLinkedQueue<Token> tokens = new ConcurrentLinkedQueue<>();
 
 	public Long getId() {
 		return id;
@@ -131,5 +140,22 @@ public class Counter {
 
 	public void setSteps(List<ServiceStep> steps) {
 		this.steps = steps;
+	}
+
+	public Queue<Token> getTokens() {
+		return tokens;
+	}
+	
+	public Token pullToken() {
+		Token token = tokens.poll();
+		if(Objects.isNull(token))
+			throw new BusinessRuntimeException(ApplicationConstants.ERR_EMPTY_COUNTER_QUEUE);
+		return token;
+	}
+
+	public void addToken(Token token) {
+		token.setCounterNumber(number);
+		token.setBranchId(branchId);
+		this.tokens.offer(token);
 	}
 }

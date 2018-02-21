@@ -14,4 +14,6 @@ public interface BaseRepository<T, I extends Serializable> extends CrudRepositor
 	public void flush();
 	
 	public <S extends T> S saveAndFlush(S entity);
+	
+	public <S extends T> List<S> save(Iterable<S> entities);
 }

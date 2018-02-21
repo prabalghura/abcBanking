@@ -14,12 +14,12 @@ import com.turvo.abcbanking.model.ServiceStep;
 public interface CounterService {
 
 	/**
-	 * Gets all the branch counters defined in the system.
+	 * Gets full fledged branch counters defined in the system.
 	 * 
 	 * @param branchId
 	 * @return list of counters
 	 */
-	public List<Counter> getAllBranchCounters(Long branchId);
+	public List<Counter> getBranchCountersFromDB(Long branchId);
 	
 	/**
 	 * Creates a new counter in the branch specified
@@ -43,15 +43,6 @@ public interface CounterService {
 	public Counter assignOperator(String assignerId, Long branchId, Integer counterNumber, String operatorId);
 	
 	/**
-	 * Get a counter with all service steps it currently serves.
-	 * 
-	 * @param branchId
-	 * @param counterNumber
-	 * @return counter instance if exists 
-	 */
-	public Counter getBranchCounter(Long branchId, Integer counterNumber);
-	
-	/**
 	 * Assigns a counter service steps it can service (exclusive addition)
 	 * Existing steps are not modified, if existing steps are added they are simply ignored
 	 * 
@@ -62,4 +53,13 @@ public interface CounterService {
 	 * @return
 	 */
 	public Counter assignSteps(String assignerId, Long branchId, Integer counterNumber, List<ServiceStep> steps);
+	
+	/**
+	 * Services first token in the counter queue, reassigns to next counter if applicable or mark as completed
+	 * 
+	 * @param branchId
+	 * @param counterNumber
+	 * @param comments
+	 */
+	public void serviceFirstCounter(String executorId, Long branchId, Integer counterNumber, String comments);
 }

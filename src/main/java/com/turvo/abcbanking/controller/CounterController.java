@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.turvo.abcbanking.model.Counter;
 import com.turvo.abcbanking.model.ServiceStep;
+import com.turvo.abcbanking.service.BranchService;
 import com.turvo.abcbanking.service.CounterService;
 
 /**
@@ -29,6 +30,9 @@ public class CounterController {
 	@Autowired
 	CounterService counterService;
 	
+	@Autowired
+	BranchService branchService;
+	
 	/**
 	 * For getting all counters in a specific branch
 	 * 
@@ -37,7 +41,7 @@ public class CounterController {
 	 */
 	@RequestMapping("/branches/{id}/counters")
 	public List<Counter> getBranchCounters(@PathVariable(value = "id") Long branchId) {
-		return counterService.getAllBranchCounters(branchId);
+		return branchService.getBranch(branchId).getCounters();
 	}
 	
 	/**
@@ -78,7 +82,7 @@ public class CounterController {
 	 */
 	@RequestMapping("/branches/{id}/counters/{counterId}")
 	public Counter getBranchCounter(@PathVariable(value = "id") Long branchId, @PathVariable(value = "counterId") Integer counterNumber) {
-		return counterService.getBranchCounter(branchId, counterNumber);
+		return branchService.getBranch(branchId).getCounter(counterNumber);
 	}
 	
 	/**

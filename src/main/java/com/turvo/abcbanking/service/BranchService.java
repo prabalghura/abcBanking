@@ -3,8 +3,8 @@ package com.turvo.abcbanking.service;
 import java.util.List;
 
 import com.turvo.abcbanking.model.Branch;
+import com.turvo.abcbanking.model.Counter;
 import com.turvo.abcbanking.model.CustomerType;
-import com.turvo.abcbanking.model.Service;
 
 /**
  * Service contract/interface for Branch operations
@@ -49,11 +49,29 @@ public interface BranchService {
 	public Branch assignManager(String assignerId, Long branchId, String managerId);
 	
 	/**
-	 * Get all the services served by a branch
+	 * Gets the best counter in a branch serving a service step
 	 * 
 	 * @param branchId
 	 * @param type
-	 * @return list of services
+	 * @param stepId
+	 * @return
 	 */
-	public List<Service> getServices(Long branchId, CustomerType type);
+	public Counter getBestCounter(Long branchId, CustomerType type, Long stepId);
+	
+	/**
+	 * updates a branch in the cache, best used for day end operation for resetting token counter
+	 * when all tokens are served
+	 * 
+	 * @param branchId
+	 * @return
+	 */
+	public Branch updateBranch(String managerId, Long branchId);
+	
+	/**
+	 * Update a counter within a branch in the cache needed for other services only
+	 * 
+	 * @param counter
+	 * @return updated counter instance
+	 */
+	public Counter updateCounter(Counter counter);
 }

@@ -86,6 +86,20 @@ public class BranchController {
 	 */
 	@RequestMapping("/branches/{id}/services/{type}")
 	public List<Service> getBranch(@PathVariable(value = "id") Long branchId, @PathVariable(value = "type") CustomerType type) {
-		return branchService.getServices(branchId, type);
+		Branch branch =  branchService.getBranch(branchId);
+		if(type == CustomerType.PREMIUM)
+			return branch.getPremiumServices();
+		return branch.getRegularServices();
+	}
+	
+	/**
+	 * updates a branch in the cache, best used for day end operation for resetting token counter
+	 * 
+	 * @param branchId
+	 * @return
+	 */
+	@PostMapping("/branches/{id}/refresh")
+	public Branch refreshDB(@RequestHeader("userId") String managerId, Long branchId) {
+		return branchService.updateBranch(managerId, branchId);
 	}
 }

@@ -32,4 +32,13 @@ public class CustomQueries {
 			+ "COUNTERXSERVICE_STEP cxs where c.ID = cxs.COUNTER_ID AND c.BRANCH_ID = ? AND c.TYPE = ? GROUP BY cxs.STEP_ID) bxs "
 			+ "on bxs.STEP_ID = sxs.STEP_ID where bxs.STEP_ID is null) bxns on s.ID = bxns.SERVICE_ID where bxns.SERVICE_ID is null "
 			+ "order by s.ID, sxs1.WORKFLOW_ORDER";
+	
+	public static final String TOKEN_FOR_COUNTER = "select t.ID, t.ACCOUNT_NUMBER, t.DISPLAY_ID, t.STATUS, t.CREATED_DATE, tft.ID WORK_FLOW_ID, "
+			+ "tft.TOKEN_ID, tft.COUNTER_ID, tft.STEP_ID, tft.SERVED_BY, tft.STATUS WORKFLOW_STATUS, tft.COMMENTS, tft.SERVED_DATE, c.TYPE "
+			+ "from TOKEN_WORKFLOW tf, TOKEN t, TOKEN_WORKFLOW tft, CUSTOMER c where tf.TOKEN_ID = t.ID and tf.COUNTER_ID = ? "
+			+ "and tf.STATUS = 'ASSIGNED' and t.STATUS = 'PENDING' and tft.TOKEN_ID = t.ID and c.ACCOUNT_NUMBER = t.ACCOUNT_NUMBER";
+	
+	public static final String TOKEN_MAX_NUMBER = "select coalesce(max(t.number), 0) from Counter c, TokenWorkflow w, Token t where "
+			+ "c.branchId = ?1 and w.counterId = c.id and w.tokenId = t.id and w.status = 'ASSIGNED' "
+			+ "and t.status = 'PENDING'";
 }
