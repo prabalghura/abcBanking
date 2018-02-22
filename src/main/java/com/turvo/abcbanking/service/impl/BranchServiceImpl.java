@@ -140,6 +140,12 @@ public class BranchServiceImpl extends BaseServiceImpl implements BranchService 
 		return counter;
 	}
 	
+	@Override
+	public void reloadEntireCache() {
+		branches.clear();
+		getAllBranches();
+	}
+	
 	/**
 	 * updates a branch in the cache
 	 * 

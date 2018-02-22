@@ -16,6 +16,7 @@ import com.turvo.abcbanking.model.ServiceXServiceStep;
 import com.turvo.abcbanking.repository.ServiceRepository;
 import com.turvo.abcbanking.repository.ServiceStepRepository;
 import com.turvo.abcbanking.repository.ServiceXServiceStepRepository;
+import com.turvo.abcbanking.service.BranchService;
 import com.turvo.abcbanking.service.ServiceStepService;
 import com.turvo.abcbanking.utils.ApplicationConstants;
 
@@ -28,6 +29,9 @@ import com.turvo.abcbanking.utils.ApplicationConstants;
 @org.springframework.stereotype.Service("serviceStepService")
 public class ServiceStepServiceImpl extends BaseServiceImpl implements ServiceStepService{
 
+	@Autowired
+	BranchService branchService;
+	
 	@Autowired
 	ServiceRepository serviceRepository;
 	
@@ -113,6 +117,8 @@ public class ServiceStepServiceImpl extends BaseServiceImpl implements ServiceSt
 		serviceXServiceStepRepository.deleteServiceWorkflow(serviceId);
 		serviceXServiceStepRepository.save(workflowList);
 		serviceXServiceStepRepository.flush();
+		
+		branchService.reloadEntireCache();
 		
 		return getService(serviceId);
 	}

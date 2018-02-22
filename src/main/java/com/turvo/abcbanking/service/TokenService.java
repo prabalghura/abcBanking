@@ -23,4 +23,22 @@ public interface TokenService {
 	 * @return new Token instance
 	 */
 	public Token createToken(Customer customer, Long branchId, List<Service> services);
+	
+	/**
+	 * To mark a token as completed 
+	 * 
+	 * @param executorId
+	 * @param branchId
+	 * @param counterNumber
+	 */
+	public void markTokenAsCompleted(String executorId, Long branchId, Integer tokenNumber);
+	
+	/**
+	 * To mark a token as cancelled 
+	 * 
+	 * @param executorId
+	 * @param branchId
+	 * @param counterNumber
+	 */
+	public void markTokenAsCancelled(String executorId, Long branchId, Integer tokenNumber);
 }

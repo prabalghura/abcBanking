@@ -152,6 +152,19 @@ public class Counter {
 			throw new BusinessRuntimeException(ApplicationConstants.ERR_EMPTY_COUNTER_QUEUE);
 		return token;
 	}
+	
+	public Token hasToken(Integer tokenNumber) {
+		for(Token token: tokens) {
+			if(token.getNumber() == tokenNumber)
+				return token;
+		}
+		return null;
+	}
+	
+	public Counter removeToken(Token token) {
+		tokens.remove(token);
+		return this;
+	}
 
 	public void addToken(Token token) {
 		token.setCounterNumber(number);

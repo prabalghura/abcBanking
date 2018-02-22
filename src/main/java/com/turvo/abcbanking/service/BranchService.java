@@ -74,4 +74,11 @@ public interface BranchService {
 	 * @return updated counter instance
 	 */
 	public Counter updateCounter(Counter counter);
+	
+	/**
+	 * To scrap entire branch cache and reload it from DB 
+	 * used in case of change in service to service step mapping
+	 * 
+	 */
+	public void reloadEntireCache();
 }

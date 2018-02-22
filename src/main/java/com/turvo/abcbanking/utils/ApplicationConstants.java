@@ -29,6 +29,7 @@ public class ApplicationConstants {
 	public static final String ERR_EMPTY_COUNTER_QUEUE = "Counter queue is empty";
 	public static final String ERR_EMPTY_SERVICE_TOKEN = "Service list must not be empty";
 	public static final String ERR_CUSTOMER_NOT_EXIST = "Customer does not exists";
+	public static final String ERR_TOKEN_NOT_EXIST = "Token does not exists";
 	
 	// Roles
 	public static final String ROLE_ASSIGN_ROLES = "ASSIGN_ROLES";

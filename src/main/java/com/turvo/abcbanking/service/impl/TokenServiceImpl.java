@@ -100,4 +100,46 @@ public class TokenServiceImpl extends BaseServiceImpl implements TokenService {
 		
 		return token;
 	}
+	
+	@Override
+	public void markTokenAsCompleted(String executorId, Long branchId, Integer tokenNumber) {
+		markToken(executorId, branchId, tokenNumber, TokenStatus.COMPLETED);
+	}
+
+	@Override
+	public void markTokenAsCancelled(String executorId, Long branchId, Integer tokenNumber) {
+		markToken(executorId, branchId, tokenNumber, TokenStatus.CANCELLED);
+	}
+	
+	/**
+	 * For marking a token and removing it from counter queue
+	 * 
+	 * @param executorId
+	 * @param branchId
+	 * @param tokenNumber
+	 * @param status
+	 */
+	private void markToken(String executorId, Long branchId, Integer tokenNumber, TokenStatus status) {
+		Branch branch = getBranch(branchId);
+		List<Counter> counters = branch.getCounters();
+		for(Counter counter: counters) {
+			Token token = counter.hasToken(tokenNumber);
+			if(!Objects.isNull(token)) {
+				if(!branch.getManagerId().equals(executorId) && !counter.getCurrentOperator().equals(executorId))
+					throw new BusinessRuntimeException(ApplicationConstants.ERR_ACCESS_DENIED);
+				branchService.updateCounter(counter.removeToken(token));
+				token.setStatus(status);
+				tokenRepository.saveAndFlush(token);
+				return;
+			}
+		}
+		throw new BusinessRuntimeException(ApplicationConstants.ERR_TOKEN_NOT_EXIST);
+	}
+	
+	private Branch getBranch(Long branchId) {
+		Branch branch =  branchService.getBranch(branchId);
+		if(Objects.isNull(branch))
+			throw new BusinessRuntimeException(ApplicationConstants.ERR_BRANCH_NOT_EXIST);
+		return branch;
+	}
 }
