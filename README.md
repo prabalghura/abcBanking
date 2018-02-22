@@ -1,6 +1,8 @@
 # abcBanking
 API to provide managing token queues in a Banking system
 
+API documentation available at https://prabalghura.github.io/abcBanking/
+
 Below is the DB Model for the solution:
 
 [
@@ -41,3 +43,72 @@ Relationship among entities:
 
 **Best counter within branch**: A Token is held by customer having a type, all the counters within a branch serving that customer type are listed. Counters which are not serving current token_workflow step are removed from the list. From the remaining list best counter is the one having minimum current token queue size.
 
+## Caching structre
+
+<h3>Model JSON structure</h3>
+<ol>
+<li>User: {<br>
+  "userId": String, <br>
+  "name": String <br>
+}</li>
+
+<li>Customer: {<br>
+  "accountNumber": long, <br>
+  "name": String, <br>
+  "phoneNumber": String, (optional) <br>
+  "address": String, (optional) <br>
+  "type": String (values=[REGULAR, PREMIUM]) <br>
+}</li>
+
+<li>ServiceStep: {<br>
+  "id": long, <br>
+  "name": String <br>
+}</li>
+
+<li>Service: {<br>
+  "id": long, <br>
+  "name": String, <br>
+  "steps": [ServiceStep] <br>
+}</li>
+
+<li>TokenWorkflow: {<br>
+  "stepId": long, <br>
+  "servedBy": String, <br>
+  "status": String (values=[COMPLETED,	ASSIGNED,	PENDING]) <br>
+  "comments": String <br>
+}</li>
+
+<li>Token: {<br>
+  "accountNumber": long, <br>
+  "number": Integer, <br>
+  "steps": [TokenWorkflow] <br>
+}</li>
+
+<li>Counter: {<br>
+  "currentOperator": String, <br>
+  "number": Integer, <br>
+  "servicingType": String, (values=[REGULAR, PREMIUM]) <br>
+  "steps": [ServiceStep], <br>
+  "tokens": [Token] <br>
+}</li>
+
+<li>Branch: {<br>
+  "id": long, <br>
+  "name": String, <br>
+  "managerId": String, <br>
+  "regularServices": [Service], <br>
+  "premiumServices": [Service], <br>
+  "counters": [Counter] <br>
+}</li>
+</ol>
+
+<h3>Rest API's :</h3>
+<ol>
+<li>URL: /branches <br>
+Method : GET <br>
+Response : [Branch]<br>
+
+For getting all the branches registered in the system.
+</li>
+
+</ol>
