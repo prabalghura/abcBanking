@@ -27,6 +27,7 @@ import com.turvo.abcbanking.service.BranchService;
 import com.turvo.abcbanking.service.CounterService;
 import com.turvo.abcbanking.service.UserService;
 import com.turvo.abcbanking.utils.ApplicationConstants;
+import com.turvo.abcbanking.utils.DBAsyncExecutor;
 
 /**
  * Service implementation for Counter operations
@@ -125,6 +126,10 @@ public class CounterServiceImpl extends BaseServiceImpl implements CounterServic
 		return branch.getCounter(counterNumber);
 	}
 	
+	/**
+	 * DB update is asynchronous
+	 * 
+	 */
 	@Override
 	@Transactional(readOnly = false)
 	public void serviceFirstCounter(String executorId, Long branchId, Integer counterNumber, String comments) {
@@ -143,8 +148,7 @@ public class CounterServiceImpl extends BaseServiceImpl implements CounterServic
 			
 			branchService.updateCounter(nextCounter);
 		}
-		tokenWorkflowRepository.save(steps1);
-		tokenWorkflowRepository.flush();
+		new Thread(new DBAsyncExecutor<TokenWorkflow, TokenWorkflowRepository>(steps1, tokenWorkflowRepository)).start();
 	}
 	
 	private List<Long> getStepIdstoBeAdded(Long counterId, List<ServiceStep> steps) {

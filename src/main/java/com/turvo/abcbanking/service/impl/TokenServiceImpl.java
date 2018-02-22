@@ -22,6 +22,7 @@ import com.turvo.abcbanking.repository.TokenWorkflowRepository;
 import com.turvo.abcbanking.service.BranchService;
 import com.turvo.abcbanking.service.TokenService;
 import com.turvo.abcbanking.utils.ApplicationConstants;
+import com.turvo.abcbanking.utils.DBAsyncExecutor;
 
 /**
  * Service implementation for Counter operations
@@ -113,6 +114,7 @@ public class TokenServiceImpl extends BaseServiceImpl implements TokenService {
 	
 	/**
 	 * For marking a token and removing it from counter queue
+	 * DB update is asynchronous
 	 * 
 	 * @param executorId
 	 * @param branchId
@@ -129,7 +131,8 @@ public class TokenServiceImpl extends BaseServiceImpl implements TokenService {
 					throw new BusinessRuntimeException(ApplicationConstants.ERR_ACCESS_DENIED);
 				branchService.updateCounter(counter.removeToken(token));
 				token.setStatus(status);
-				tokenRepository.saveAndFlush(token);
+				
+				new Thread(new DBAsyncExecutor<Token, TokenRepository>(token, tokenRepository)).start();
 				return;
 			}
 		}
