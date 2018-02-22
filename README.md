@@ -118,9 +118,49 @@ Response : Branch<br>
 For getting a specific branch.
 </li>
 
+<li><b>URL: /branches/{branchId}/counters/{counterId}/service <br>
+Method : POST <br>
+RequestHeader: {"userId": String}<br>
+Response : {SUCCESS: String} <br>
+
+To service first token in the counter queue
+<b></li>
+
+<li><b>URL: /branches/{branchId}/customer/{accountNumber}/token <br>
+Method : POST <br>
+RequestBody: [Services]
+Response : Token <br>
+
+For creating token for an existing customer
+<b></li>
+
+<li><b>URL: /branches/{branchId}/token <br>
+Method : POST <br>
+RequestBody: {customer: Customer, services: [Services]}
+Response : Token <br>
+
+For creating token for new customer
+<b></li>
+
+<li><b>URL: /branches/{branchId}/token/{tokenId}/complete <br>
+Method : POST <br>
+RequestHeader: {"userId": String}<br>
+Response : {SUCCESS: String} <br>
+
+For marking a token as completed
+<b></li>
+
+<li><b>URL: /branches/{branchId}/token/{tokenId}/cancel <br>
+Method : POST <br>
+RequestHeader: {"userId": String}<br>
+Response : {SUCCESS: String} <br>
+
+For marking a token as cancelled
+<b></li>
+
 <li>URL: /branches <br>
 Method : POST <br>
-RequestHeader: {"creatorId": String}
+RequestHeader: {"userId": String} <br>
 Request Body: Branch <br>
 Response : Branch<br>
 
@@ -129,7 +169,7 @@ For creating a new branch
 
 <li>URL: /branches/{branchId}/manager/{managerId} <br>
 Method : POST <br>
-RequestHeader: {"assignerId": String}
+RequestHeader: {"userId": String} <br>
 Response : Branch<br>
 
 For assigning manager to a branch
@@ -144,8 +184,46 @@ For getting all the services served by a Branch
 
 <li>URL: /branches/{branchId}/refresh <br>
 Method : POST <br>
-Response : [Service]<br>
+RequestHeader: {"userId": String} <br>
+Response : Branch<br>
 
 Updates a branch in the cache, best used for day end operation for resetting token counter
+</li>
+
+<li><b>URL: /branches/{branchId}/counters <br>
+Method : GET <br>
+Response : [Counter]<br>
+
+For getting all counters in a specific branch, best to display token status board contains list of counter queues in the branch</b>
+</li>
+
+<li>URL: /branches/{branchId}/counters <br>
+Method : POST <br>
+RequestHeader: {"userId": String} <br>
+Response : Counter<br>
+
+For creating a new counter in a branch
+</li>
+
+<li>URL: /branches/{branchId}/counters/{counterId}/operator/{operatorId} <br>
+Method : POST <br>
+RequestHeader: {"userId": String} <br>
+Response : Counter<br>
+
+Assigns a counter an operator
+</li>
+
+<li><b>URL: /branches/{branchId}/counters/{counterId} <br>
+Method : GET <br>
+Response : Counter<br>
+
+For getting a specific counter in a branch, best for letting a counter know about its own queue
+<b></li>
+
+<li>URL: /branches/{branchId}/counters/{counterId}/steps <br>
+Method : POST <br>
+Response : Counter<br>
+
+Assigns a counter service steps it can service (exclusive addition)
 </li>
 </ol>
