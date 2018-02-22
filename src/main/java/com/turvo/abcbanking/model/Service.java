@@ -48,6 +48,9 @@ public class Service {
     @CreationTimestamp
     private Date createdDate;
 	
+	/**
+	 * List of steps needed in order to serve a service
+	 */
 	@Transient
 	@JsonInclude(Include.NON_EMPTY)
     private List<ServiceStep> steps = new ArrayList<>();

@@ -68,7 +68,8 @@ public interface BranchService {
 	public Branch updateBranch(String managerId, Long branchId);
 	
 	/**
-	 * Update a counter within a branch in the cache needed for other services only
+	 * Update a counter within a branch in the cache (needed for other services only)
+	 * Using services must ensure that passed counter instance have valid branch Id
 	 * 
 	 * @param counter
 	 * @return updated counter instance
@@ -77,7 +78,7 @@ public interface BranchService {
 	
 	/**
 	 * To scrap entire branch cache and reload it from DB 
-	 * used in case of change in service to service step mapping
+	 * used in case of change in service to service step mapping only
 	 * 
 	 */
 	public void reloadEntireCache();

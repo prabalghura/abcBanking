@@ -12,5 +12,4 @@ import com.turvo.abcbanking.model.TokenWorkflow;
  */
 @Repository
 public interface TokenWorkflowRepository extends BaseRepository<TokenWorkflow, Long> {
-
 }

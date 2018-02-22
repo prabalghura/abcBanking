@@ -117,7 +117,7 @@ public class CounterServiceImplTest {
 		branch.setManagerId("userId");
 		Mockito.when(branchService.getBranch(1L)).thenReturn(null);
 		Mockito.when(userService.getUser("operator1")).thenReturn(new User());
-		Mockito.when(counterRepository.findFirstByBranchIdAndNumber(1L, 1)).thenReturn(new Counter());
+		//Mockito.when(counterRepository.findFirstByBranchIdAndNumber(1L, 1)).thenReturn(new Counter());
 		exception.expect(BusinessRuntimeException.class);
 		exception.expectMessage(ApplicationConstants.ERR_BRANCH_NOT_EXIST);
 		counterService.assignOperator("userId", 1L, 1, "operator1");
@@ -133,7 +133,7 @@ public class CounterServiceImplTest {
 		branch.setManagerId("user2");
 		Mockito.when(branchService.getBranch(1L)).thenReturn(branch);
 		Mockito.when(userService.getUser("operator1")).thenReturn(new User());
-		Mockito.when(counterRepository.findFirstByBranchIdAndNumber(1L, 1)).thenReturn(new Counter());
+		//Mockito.when(counterRepository.findFirstByBranchIdAndNumber(1L, 1)).thenReturn(new Counter());
 		exception.expect(BusinessRuntimeException.class);
 		exception.expectMessage(ApplicationConstants.ERR_ACCESS_DENIED);
 		counterService.assignOperator("userId", 1L, 1, "operator1");
@@ -149,7 +149,7 @@ public class CounterServiceImplTest {
 		branch.setManagerId("userId");
 		Mockito.when(branchService.getBranch(1L)).thenReturn(branch);
 		Mockito.when(userService.getUser("operator1")).thenReturn(null);
-		Mockito.when(counterRepository.findFirstByBranchIdAndNumber(1L, 1)).thenReturn(new Counter());
+		//Mockito.when(counterRepository.findFirstByBranchIdAndNumber(1L, 1)).thenReturn(new Counter());
 		exception.expect(BusinessRuntimeException.class);
 		exception.expectMessage(ApplicationConstants.ERR_OPERATOR_NOT_EXIST);
 		counterService.assignOperator("userId", 1L, 1, "operator1");
@@ -165,7 +165,7 @@ public class CounterServiceImplTest {
 		branch.setManagerId("userId");
 		Mockito.when(branchService.getBranch(1L)).thenReturn(branch);
 		Mockito.when(userService.getUser("operator1")).thenReturn(new User());
-		Mockito.when(counterRepository.findFirstByBranchIdAndNumber(1L, 1)).thenReturn(null);
+		//Mockito.when(counterRepository.findFirstByBranchIdAndNumber(1L, 1)).thenReturn(null);
 		exception.expect(BusinessRuntimeException.class);
 		exception.expectMessage(ApplicationConstants.ERR_COUNTER_NOT_EXIST);
 		counterService.assignOperator("userId", 1L, 1, "operator1");
@@ -181,7 +181,7 @@ public class CounterServiceImplTest {
 		branch.setManagerId("userId");
 		Mockito.when(branchService.getBranch(1L)).thenReturn(branch);
 		Mockito.when(userService.getUser("operator1")).thenReturn(new User());
-		Mockito.when(counterRepository.findFirstByBranchIdAndNumber(1L, 1)).thenReturn(new Counter());
+		//Mockito.when(counterRepository.findFirstByBranchIdAndNumber(1L, 1)).thenReturn(new Counter());
 		counterService.assignOperator("userId", 1L, 1, "operator1");
 	}
 }

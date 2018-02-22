@@ -57,21 +57,33 @@ public class Branch {
     @JsonIgnore
     private Date modifiedDate;
 	
+	/**
+	 * Derived list based on branch-counter-serviceStep-service relationship
+	 */
 	@Transient
 	@JsonInclude(Include.NON_EMPTY)
 	private List<Service> regularServices = new ArrayList<>();
 	
+	/**
+	 * Derived list based on branch-counter-serviceStep-service relationship
+	 */
 	@Transient
 	@JsonInclude(Include.NON_EMPTY)
 	private List<Service> premiumServices = new ArrayList<>();
 	
+	/**
+	 * Derived list made from regularCounters and premiumCounters map
+	 */
 	@Transient
 	@JsonInclude(Include.NON_EMPTY)
-	List<Counter> counters = new ArrayList<>();
+	private List<Counter> counters = new ArrayList<>();
 	
+	/**
+	 * Branch specific token generator number to be assigned to new tokens, implementation is synchronized
+	 */
 	@Transient
 	@JsonIgnore
-	Integer tokenNumber;
+	private Integer tokenNumber;
 	
 	@Transient
 	@JsonIgnore
@@ -137,6 +149,11 @@ public class Branch {
 		this.modifiedDate = modifiedDate;
 	}
 	
+	/**
+	 * Creating list from Maps for Json response
+	 * 
+	 * @return list of counters
+	 */
 	public List<Counter> getRegularCounters() {
 		List<Counter> counters1 = new ArrayList<>();
 		for (Map.Entry<Integer, Counter> entry : regularCounters.entrySet()) { 
@@ -145,6 +162,11 @@ public class Branch {
 		return counters1;
 	}
 	
+	/**
+	 * Creating list from Maps for Json response
+	 * 
+	 * @return list of counters
+	 */
 	public List<Counter> getPremiumCounters() {
 		List<Counter> counters1 = new ArrayList<>();
 		for (Map.Entry<Integer, Counter> entry : premiumCounters.entrySet()) { 
@@ -153,6 +175,11 @@ public class Branch {
 		return counters1;
 	}
 	
+	/**
+	 * Merging both counter lists to return final JSON response
+	 * 
+	 * @return list of counters
+	 */
 	public List<Counter> getCounters() {
 		this.counters.clear();
 		this.counters.addAll(getRegularCounters());
@@ -160,10 +187,20 @@ public class Branch {
 		return this.counters;
 	}
 	
+	/**
+	 * Initializing token generator from DB branch load
+	 * 
+	 * @param tokenNumber
+	 */
 	public synchronized void setTokenNumber(Integer tokenNumber) {
 		this.tokenNumber = tokenNumber;
 	}
 
+	/**
+	 * Updating a token in the concurrent map
+	 * 
+	 * @param counter
+	 */
 	public void updateCounter(Counter counter) {
 		if(counter.getServicingType() == CustomerType.REGULAR)
 			regularCounters.put(counter.getNumber(), counter);
@@ -171,6 +208,12 @@ public class Branch {
 			premiumCounters.put(counter.getNumber(), counter);
 	}
 	
+	/**
+	 * Getting a counter from either counter map
+	 * 
+	 * @param number
+	 * @return counter
+	 */
 	public Counter getCounter(Integer number) {
 		Counter counter = regularCounters.get(number);
 		if(Objects.isNull(counter))
@@ -179,6 +222,11 @@ public class Branch {
 			return counter;
 	}
 	
+	/**
+	 * Get a token number (branch specific) for assigning to a new token generated in the branch.  
+	 * 
+	 * @return tokenNumber
+	 */
 	public synchronized Integer getTokenNumber() {
 		return ++tokenNumber;
 	}

@@ -7,7 +7,7 @@ import com.turvo.abcbanking.service.RoleService;
 import com.turvo.abcbanking.utils.ApplicationConstants;
 
 /**
- * Abstract class to provide common functionality across all services
+ * Abstract class to provide common functionalities across all services
  * 
  * @author Prabal Ghura
  *

@@ -43,10 +43,14 @@ Relationship among entities:
 
 **Best counter within branch**: A Token is held by customer having a type, all the counters within a branch serving that customer type are listed. Counters which are not serving current token_workflow step are removed from the list. From the remaining list best counter is the one having minimum current token queue size.
 
-## Caching structre
+## Caching structure
 
 <h3>Model JSON structure</h3>
 <ol>
+<li>Role: {<br>
+  "name": String, <br>
+}</li>
+
 <li>User: {<br>
   "userId": String, <br>
   "name": String <br>
@@ -123,7 +127,7 @@ To service first token in the counter queue
 
 <li>URL: /branches/{branchId}/customer/{accountNumber}/token <br>
 Method : POST <br>
-RequestBody: [Services]
+RequestBody: [Services] <br>
 Response : Token <br>
 
 For creating token for an existing customer
@@ -131,7 +135,7 @@ For creating token for an existing customer
 
 <li>URL: /branches/{branchId}/token <br>
 Method : POST <br>
-RequestBody: {customer: Customer, services: [Services]}
+RequestBody: {customer: Customer, services: [Services]} <br>
 Response : Token <br>
 
 For creating token for new customer
@@ -156,16 +160,16 @@ For marking a token as cancelled
 
 Other API please refer source/documentation for details
 <ol>
-<li> /branches/{id}/refresh </li>
+<li> /branches/{branchId}/refresh </li>
 <li> /branches </li>
 <li> /branches </li>
-<li> /branches/{id}/services/{type} </li>
-<li> /branches/{id}/manager/{managerId} </li>
-<li> /branches/{id}/counters </li>
-<li> /branches/{id}/counters </li>
-<li> /branches/{id}/counters/{counterId}/operator/{operatorId} </li>
-<li> /branches/{id}/counters/{counterId} </li>
-<li> /branches/{id}/counters/{counterId}/steps </li>
+<li> /branches/{branchId}/services/{type} </li>
+<li> /branches/{branchId}/manager/{managerId} </li>
+<li> /branches/{branchId}/counters </li>
+<li> /branches/{branchId}/counters </li>
+<li> /branches/{branchId}/counters/{counterId}/operator/{operatorId} </li>
+<li> /branches/{branchId}/counters/{counterId} </li>
+<li> /branches/{branchId}/counters/{counterId}/steps </li>
 <li> /services/{id} </li>
 <li> /services </li>
 <li> /services </li>

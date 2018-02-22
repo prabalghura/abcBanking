@@ -15,6 +15,7 @@ public interface CounterService {
 
 	/**
 	 * Gets full fledged branch counters defined in the system.
+	 * Used only during entire cache load
 	 * 
 	 * @param branchId
 	 * @return list of counters
@@ -55,7 +56,7 @@ public interface CounterService {
 	public Counter assignSteps(String assignerId, Long branchId, Integer counterNumber, List<ServiceStep> steps);
 	
 	/**
-	 * Services first token in the counter queue, reassigns to next counter if applicable or mark as completed
+	 * Services first token in the counter queue, reassigns to next counter if applicable
 	 * 
 	 * @param branchId
 	 * @param counterNumber

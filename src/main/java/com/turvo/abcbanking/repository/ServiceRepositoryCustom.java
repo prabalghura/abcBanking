@@ -14,7 +14,7 @@ import com.turvo.abcbanking.model.Service;
 public interface ServiceRepositoryCustom {
 	
 	/**
-	 * To get all the services a branch serves
+	 * To get all the services a branch serves for a customer Type
 	 * 
 	 * @param branchId
 	 * @param type

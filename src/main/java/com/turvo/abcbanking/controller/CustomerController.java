@@ -50,7 +50,7 @@ public class CustomerController {
 	}
 	
 	/**
-	 * For creating token for an existing customer
+	 * For creating token for new customer
 	 * 
 	 * @param branchId
 	 * @param Customer & Service Container

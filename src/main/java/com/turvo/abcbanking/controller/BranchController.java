@@ -95,11 +95,12 @@ public class BranchController {
 	/**
 	 * updates a branch in the cache, best used for day end operation for resetting token counter
 	 * 
+	 * @param managerId
 	 * @param branchId
 	 * @return
 	 */
 	@PostMapping("/branches/{id}/refresh")
-	public Branch refreshDB(@RequestHeader("userId") String managerId, Long branchId) {
+	public Branch refreshDB(@RequestHeader("userId") String managerId, @PathVariable(value = "id") Long branchId) {
 		return branchService.updateBranch(managerId, branchId);
 	}
 }

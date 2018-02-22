@@ -55,18 +55,32 @@ public class Token {
     @JsonIgnore
     private Date createdDate;
 	
+	/**
+	 * Reverse mapping if needed for any operation (not currently used)
+	 */
 	@Transient
 	@JsonIgnore
 	private Long branchId;
 	
+	/**
+	 * Reverse mapping if needed for any operation (not currently used)
+	 */
 	@Transient
 	@JsonIgnore
 	private Integer counterNumber;
 	
+	/**
+	 * Mapped from holding customer instance
+	 */
 	@Transient
 	@JsonIgnore
 	private CustomerType type;
 	
+	/**
+	 * Mapped from Token Workflow relationship
+	 * 
+	 * All tokens need to have always needed to have a list of workflow steps provided from chosen services while token creation
+	 */
 	@Transient
 	@JsonInclude(Include.NON_EMPTY)
     private List<TokenWorkflow> steps = new ArrayList<>();
@@ -119,6 +133,13 @@ public class Token {
 		this.steps = steps;
 	}
 	
+	/**
+	 * For getting a list of workflow steps as to be updated in DB for reflecting completion of current step and assignment to next step
+	 * 
+	 * @param comments provided by opeartor
+	 * @param operatorId who served current step
+	 * @return list of updated token workflows needed to be persisted in DB
+	 */
 	public List<TokenWorkflow> serviceAndGetNextPendingWorkFlowStep(String comments, String operatorId) {
 		List<TokenWorkflow> steps1 = new ArrayList<>();
 		for(TokenWorkflow step: steps) {

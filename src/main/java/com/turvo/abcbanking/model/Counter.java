@@ -70,10 +70,16 @@ public class Counter {
     @JsonIgnore
     private Date modifiedDate;
 	
+	/**
+	 * All the service steps that the counter currently serves
+	 */
 	@Transient
 	@JsonInclude(Include.NON_EMPTY)
 	private List<ServiceStep> steps = new ArrayList<>();
 	
+	/**
+	 * Concurrent Queue of tokens
+	 */
 	@Transient
 	@JsonInclude(Include.NON_EMPTY)
     private ConcurrentLinkedQueue<Token> tokens = new ConcurrentLinkedQueue<>();
@@ -146,6 +152,11 @@ public class Counter {
 		return tokens;
 	}
 	
+	/**
+	 * Retrieves and removes a token from the counter queue head
+	 * 
+	 * @return token
+	 */
 	public Token pullToken() {
 		Token token = tokens.poll();
 		if(Objects.isNull(token))
@@ -153,6 +164,12 @@ public class Counter {
 		return token;
 	}
 	
+	/**
+	 * Retrives but does not remove a token from counter queue (traversal)
+	 * 
+	 * @param tokenNumber
+	 * @return token
+	 */
 	public Token hasToken(Integer tokenNumber) {
 		for(Token token: tokens) {
 			if(token.getNumber() == tokenNumber)
@@ -161,11 +178,22 @@ public class Counter {
 		return null;
 	}
 	
+	/**
+	 * Remove a token from counter token queue
+	 * 
+	 * @param token
+	 * @return updated counter instannce
+	 */
 	public Counter removeToken(Token token) {
 		tokens.remove(token);
 		return this;
 	}
 
+	/**
+	 * Adds a token to the counter queue tail
+	 * 
+	 * @param token
+	 */
 	public void addToken(Token token) {
 		token.setCounterNumber(number);
 		token.setBranchId(branchId);

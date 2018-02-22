@@ -29,12 +29,17 @@ public class ServiceRepositoryImpl implements ServiceRepositoryCustom {
 	
 	@PersistenceContext
     EntityManager entityManager;
+	
+	/**
+	 * The implementation fetches Services along with service steps in one DB call
+	 */
     @Override
     public List<Service> getServicesForBranch(Long branchId, CustomerType type) {
         Query query = entityManager.createNativeQuery(CustomQueries.SERVICE_FOR_BRANCH);
         query.setParameter(1, branchId);
         query.setParameter(2, type.toString());
-        List<Object[]> resultList =  query.getResultList();
+        @SuppressWarnings("unchecked")
+		List<Object[]> resultList =  query.getResultList();
         Integer previousServiceId = null;
         Service service = null;
         

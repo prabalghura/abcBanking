@@ -33,13 +33,4 @@ public interface CounterRepository extends BaseRepository<Counter, Long>{
 	 */
 	@Query(CustomQueries.COUNTER_MAX_NUMBER)
 	Integer getMaxCounterNumber(Long branchId);
-	
-	/**
-	 * For finding counter by branchId and counter display number
-	 * 
-	 * @param branchId
-	 * @param counterNumber
-	 * @return counter if exists
-	 */
-	public Counter findFirstByBranchIdAndNumber(Long branchId, Integer number);
 }

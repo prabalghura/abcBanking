@@ -33,11 +33,15 @@ public class TokenRepositoryImpl implements TokenRepositoryCustom{
 	@PersistenceContext
     EntityManager entityManager;
 
+	/**
+	 * The implementation fetches Tokens along with token workflow steps in one DB call
+	 */
 	@Override
 	public List<Token> getTokensForCounter(Long counterId) {
 		Query query = entityManager.createNativeQuery(CustomQueries.TOKEN_FOR_COUNTER);
         query.setParameter(1, counterId);
-        List<Object[]> resultList =  query.getResultList();
+        @SuppressWarnings("unchecked")
+		List<Object[]> resultList =  query.getResultList();
         Integer previousTokenId = null;
         Token token = null;
         
