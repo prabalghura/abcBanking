@@ -111,4 +111,41 @@ Response : [Branch]<br>
 For getting all the branches registered in the system.
 </li>
 
+<li>URL: /branches/{branchId} <br>
+Method : GET <br>
+Response : Branch<br>
+
+For getting a specific branch.
+</li>
+
+<li>URL: /branches <br>
+Method : POST <br>
+RequestHeader: {"creatorId": String}
+Request Body: Branch <br>
+Response : Branch<br>
+
+For creating a new branch
+</li>
+
+<li>URL: /branches/{branchId}/manager/{managerId} <br>
+Method : POST <br>
+RequestHeader: {"assignerId": String}
+Response : Branch<br>
+
+For assigning manager to a branch
+</li>
+
+<li>URL: /branches/{branchId}/services/{type: String (values=[REGULAR/PREMIUM])} <br>
+Method : GET <br>
+Response : [Service]<br>
+
+For getting all the services served by a Branch
+</li>
+
+<li>URL: /branches/{branchId}/refresh <br>
+Method : POST <br>
+Response : [Service]<br>
+
+Updates a branch in the cache, best used for day end operation for resetting token counter
+</li>
 </ol>
