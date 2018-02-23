@@ -5,9 +5,7 @@ API documentation available at https://prabalghura.github.io/abcBanking/
 
 Below is the DB Model for the solution:
 
-[
 ![abcbanking model](https://user-images.githubusercontent.com/34856263/36524251-5dbc46d2-17cb-11e8-96f8-2d70824c1985.png)
-]
 
 Entities in the system:
 
@@ -43,7 +41,57 @@ Relationship among entities:
 
 **Best counter within branch**: A Token is held by customer having a type, all the counters within a branch serving that customer type are listed. Counters which are not serving current token_workflow step are removed from the list. From the remaining list best counter is the one having minimum current token queue size.
 
-## Caching structure
+## Caching strategy
+For faster access, application maintains an internal JVM cache with following structure:
+
+ConcurrentHashMap of Branches
+<ul> 
+  <li> List of Regular Services
+    <ul>
+      <li> List of service steps </li>
+    </ul>
+  </li>
+  <li> List of Premium Services
+    <ul>
+      <li> List of service steps </li>
+    </ul>
+  </li>
+  <li> Synchronized Token number generator </li>
+  <li> ConcurrentHashMap of Regular Counters
+    <ul>
+      <li> List of service steps served </li>
+      <li> ConcurrentLinkedQueue of Tokens
+        <ul>
+          <li> Type of token mapped from Customer type it serves</li>
+          <li> List of TokenWorkflow steps </li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+  <li> ConcurrentHashMap of Premium Counters
+    <ul>
+      <li> List of service steps served </li>
+      <li> ConcurrentLinkedQueue of Tokens
+        <ul>
+          <li> Type of token mapped from Customer type it serves</li>
+          <li> List of TokenWorkflow steps </li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+</ul>
+
+1. When the application starts, this cache is fetched from DB in breadth-first-search manner. This is a heavy & recursive DB operation but it is never repeated except in one case when there is a change in service-service step mapping (This is an admin task and in an ideal scenario very rare).
+2. If a new branch is added or updated in the system. Its instance is updated in Branch cache.
+3. If a new counter is added or updated (assigning operator or steps) in the branch. Its instance within branch instance is updated (again a concurrent map inside branch), branch cache is also updated.
+4. When a token is created, it is populated with pending workflow steps from list of services requested. First step is marked Assigned and token is assigned to best counter in branch.
+5. When a new token is assigned to a counter, it is added to the tail of counter's ConcurrentLinkedQueue of Tokens
+6. When a counter serves a token it is removed from head of counter's ConcurrentLinkedQueue of Tokens. Tokens workflow steps (minimum 1 maximum 2) are updated and token is assigned to next counter, if required.
+7. When a token is marked cancelled/completed within a branch (only branch manager or current operator of counter to which token is assigned can do this). All the counter queues within a branch are looped for searching the specified token. If found, token is removed from counter queue.
+
+4, 6, 7 are high-frequency operations requiring DB update but only 4 needs DB update to complete before proceeding further. So DB updates for operation 6, 7 are made asynchronously.
+
+Rest all the operations are very straightforward, I have not included them here for brevity of this document. Please refer to source/documentation for them.
 
 <h3>Model JSON structure</h3>
 <ol>
@@ -107,7 +155,7 @@ Relationship among entities:
 </ol>
 
 <h3>Rest API's :</h3>
-baseUrl: /api
+baseUrl: /api <br>
 <ol>
 
 <li>URL: /branches/{branchId} <br>
@@ -158,7 +206,7 @@ For marking a token as cancelled
 </li>
 </ol>
 
-Other API please refer source/documentation for details
+Other APIs supported, please refer source/documentation for details
 <ol>
 <li> /branches/{branchId}/refresh </li>
 <li> /branches </li>
