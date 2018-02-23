@@ -1,7 +1,7 @@
 package com.turvo.abcbanking.utils;
 
 /**
- * Utils class to provide application vide constants.
+ * Utils class to provide application wide constants.
  * 
  * @author Prabal Ghura
  *
@@ -30,6 +30,11 @@ public class ApplicationConstants {
 	public static final String ERR_EMPTY_SERVICE_TOKEN = "Service list must not be empty";
 	public static final String ERR_CUSTOMER_NOT_EXIST = "Customer does not exists";
 	public static final String ERR_TOKEN_NOT_EXIST = "Token does not exists";
+	public static final String ERR_INVALID_CUSTOMER_NAME = "Customer name cannot be null";
+	public static final String ERR_INVALID_CUSTOMER_TYPE = "Customer type cannot be null";
+	public static final String ERR_INVALID_SERVICE_ID = "Service id must not be null";
+	public static final String ERR_TOKEN_DUPLICATE_SERVICE = "Unique services must be provided for generating token";
+	public static final String ERR_BRANCH_INVALID_SERVICE = "Branch does not serve requested service";
 	
 	// Roles
 	public static final String ROLE_ASSIGN_ROLES = "ASSIGN_ROLES";

@@ -3,6 +3,8 @@ package com.turvo.abcbanking.service.impl;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
@@ -11,6 +13,7 @@ import com.turvo.abcbanking.exception.BusinessRuntimeException;
 import com.turvo.abcbanking.model.Branch;
 import com.turvo.abcbanking.model.Counter;
 import com.turvo.abcbanking.model.Customer;
+import com.turvo.abcbanking.model.CustomerType;
 import com.turvo.abcbanking.model.Service;
 import com.turvo.abcbanking.model.ServiceStep;
 import com.turvo.abcbanking.model.Token;
@@ -43,6 +46,36 @@ public class TokenServiceImpl extends BaseServiceImpl implements TokenService {
 	TokenWorkflowRepository tokenWorkflowRepository;
 	
 	/**
+	 * To fetch full fledged services with steps serviced by branch
+	 * 
+	 * @param type
+	 * @param branchId
+	 * @param services
+	 * @return
+	 */
+	private List<Service> getBranchServices(CustomerType type, Long branchId, List<Service> services) {
+		List<Service> parentServices;
+		Set<Long> passedServiceIds = services.stream().map(Service::getId).collect(Collectors.toSet());
+		
+		if(passedServiceIds.size() != services.size())
+			throw new BusinessRuntimeException(ApplicationConstants.ERR_TOKEN_DUPLICATE_SERVICE);
+		
+		if(type == CustomerType.REGULAR)
+			parentServices = getBranch(branchId).getRegularServices();
+		else
+			parentServices = getBranch(branchId).getPremiumServices();
+		
+		List<Service> resultList =  parentServices.stream()
+				.filter(service -> passedServiceIds.contains(service.getId()))
+				.collect(Collectors.toList());
+		
+		if(resultList.size() != services.size())
+			throw new BusinessRuntimeException(ApplicationConstants.ERR_BRANCH_INVALID_SERVICE);
+		
+		return resultList;
+	}
+	
+	/**
 	 * This is 2 of 3 frequent operations in entire application which involves DB update
 	 * But because of the way counter queues are maintained in application we need to wait for DB update to return result 
 	 * therefore both DB updates are made synchronously
@@ -61,11 +94,9 @@ public class TokenServiceImpl extends BaseServiceImpl implements TokenService {
 	@Override
 	@Transactional(readOnly = false)
 	public Token createToken(Customer customer, Long branchId, List<Service> services) {
-		if(Objects.isNull(services) || services.isEmpty())
-			throw new BusinessRuntimeException(ApplicationConstants.ERR_EMPTY_SERVICE_TOKEN);
-		//TODO: fetch services from branch provided services expecting just service id to be present in input
 		List<ServiceStep> steps = new ArrayList<>();
-		services.forEach(service -> steps.addAll(service.getSteps()));
+		getBranchServices(customer.getType(), branchId, services)
+			.forEach(service -> steps.addAll(service.getSteps()));
 		
 		Branch branch = branchService.getBranch(branchId);
 		
