@@ -41,11 +41,17 @@ public class ServiceStepServiceImpl extends BaseServiceImpl implements ServiceSt
 	@Autowired
 	ServiceXServiceStepRepository serviceXServiceStepRepository;
 	
+	/**
+	 * All services are fetched and returned
+	 */
 	@Override
 	public List<Service> getAllServices() {
 		return serviceRepository.findAll();
 	}
 
+	/**
+	 * A specific service is fetched from DB along with its steps and returned
+	 */
 	@Override
 	public Service getService(Long serviceId) {
 		Service service = serviceRepository.findOne(serviceId);
@@ -54,6 +60,12 @@ public class ServiceStepServiceImpl extends BaseServiceImpl implements ServiceSt
 		return service;
 	}
 
+	/**
+	 * Access is checked
+	 * Input is validated
+	 * 
+	 * Update is made in DB and returned
+	 */
 	@Override
 	@Transactional(readOnly = false)
 	public Service createNewService(String creatorId, Service service) {
@@ -64,16 +76,28 @@ public class ServiceStepServiceImpl extends BaseServiceImpl implements ServiceSt
 		return serviceRepository.saveAndFlush(service);
 	}
 
+	/**
+	 * All service steps are fetched and returned
+	 */
 	@Override
 	public List<ServiceStep> getAllServiceSteps() {
 		return serviceStepRepository.findAll();
 	}
 
+	/**
+	 * A specific service step is fetched from DB and returned
+	 */
 	@Override
 	public ServiceStep getServiceStep(Long stepId) {
 		return serviceStepRepository.findOne(stepId);
 	}
 
+	/**
+	 * Access is checked
+	 * Input is validated
+	 * 
+	 * Update is made in DB and returned
+	 */
 	@Override
 	@Transactional(readOnly = false)
 	public ServiceStep createNewServiceStep(String creatorId, ServiceStep step) {
@@ -84,6 +108,18 @@ public class ServiceStepServiceImpl extends BaseServiceImpl implements ServiceSt
 		return serviceStepRepository.saveAndFlush(step);
 	}
 
+	/**
+	 * Access is checked
+	 * Inputs are validated
+	 * 
+	 * Order is calculated
+	 * 
+	 * Existing workflow for service is flushed from DB
+	 * New workflow is updated in DB
+	 * 
+	 * Because this operation affects all the branches as they might have now different set of services they can offer based on
+	 * counter-service step step mapping. So entire JVM branch cache is flushed and refetched from DB.
+	 */
 	@Override
 	@Transactional(readOnly = false)
 	public Service defineWorkFlowForService(String creatorId, Long serviceId, List<ServiceStep> steps) {

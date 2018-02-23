@@ -59,6 +59,9 @@ public class CounterServiceImpl extends BaseServiceImpl implements CounterServic
 	@Autowired
 	CounterXServiceStepRepository counterXServiceStepRepository;
 	
+	/**
+	 * Fetches all counters in branch from DB and fetches all internal components using breadth first search approach
+	 */
 	@Override
 	public List<Counter> getBranchCountersFromDB(Long branchId) {
 		List<Counter> counterList = counterRepository.findByBranchId(branchId);
@@ -69,6 +72,19 @@ public class CounterServiceImpl extends BaseServiceImpl implements CounterServic
 		return resultList;
 	}
 	
+	/**
+	 * Fetches services steps for a counter from DB
+	 * Fetches tokens assigned to a counter from DB
+	 * tokens are pushed to counter queue in order of retrieval
+	 * 
+	 * If branch is refreshed from DB again, it is possible that tokens are not added to counter queue in the same order as it was before
+	 * DB doesn't maintain counter queue order. This is done intentionally to provide asynchronous DB calls.
+	 * However in normal scenario counter will not be fetched again & again from DB that's why maintaining queue only at JVM cache level
+	 * will solve the purpose
+	 * 
+	 * @param counter
+	 * @return
+	 */
 	private Counter getCounterFull(Counter counter) {
 		counter.setSteps(serviceStepRepository.findByCounterId(counter.getId()));
 		List<Token> tokens = tokenRepository.getTokensForCounter(counter.getId());
@@ -77,6 +93,13 @@ public class CounterServiceImpl extends BaseServiceImpl implements CounterServic
 		return counter;
 	}
 
+	/**
+	 * Branch Id is validated
+	 * Access is checked
+	 * Passed counter instance is validated
+	 * 
+	 * counter is persisted in DB and synchronously updated in JVM cache.
+	 */
 	@Override
 	@Transactional(readOnly = false)
 	public Counter createNewCounter(String creatorId, Long branchId, Counter counter) {
@@ -92,6 +115,12 @@ public class CounterServiceImpl extends BaseServiceImpl implements CounterServic
 		return counter;
 	}
 
+	/**
+	 * Inputs are validated
+	 * Access is checked
+	 * 
+	 * counter is updated in DB and synchronously updated in JVM cache.
+	 */
 	@Override
 	@Transactional(readOnly = false)
 	public Counter assignOperator(String assignerId, Long branchId, Integer counterNumber, String operatorId) {
@@ -107,6 +136,16 @@ public class CounterServiceImpl extends BaseServiceImpl implements CounterServic
 		return counter;
 	}
 
+	/**
+	 * Inputs are validated
+	 * Access is checked
+	 * 
+	 * counter steps mapping is synchronously updated in DB.
+	 * 
+	 * Entire branch is flushed from cache and re-fetched from DB. Because this change might result in change of services branch supports
+	 * 
+	 * Counter is fetched from updated JVM cache branch and returned
+	 */
 	@Override
 	@Transactional(readOnly = false)
 	public Counter assignSteps(String assignerId, Long branchId, Integer counterNumber, List<ServiceStep> steps) {
@@ -127,7 +166,17 @@ public class CounterServiceImpl extends BaseServiceImpl implements CounterServic
 	}
 	
 	/**
-	 * DB update is asynchronous
+	 * This is 1 of 3 frequent operations in entire application which involves DB update
+	 * However, because of the way counter queues are maintained in application we need not wait for DB update to complete
+	 * That's why DB update is made asynchronously
+	 * 
+	 * Inputs are validated
+	 * Operator access is checked
+	 * First token in counter queue is polled and assigned counter is updated in cache
+	 * 
+	 * Token workflow is updated
+	 * If next step is required token is added to counter queue of next best counter in branch
+	 * New counter is updated in cache
 	 * 
 	 */
 	@Override
@@ -151,6 +200,16 @@ public class CounterServiceImpl extends BaseServiceImpl implements CounterServic
 		new Thread(new DBAsyncExecutor<TokenWorkflow, TokenWorkflowRepository>(steps1, tokenWorkflowRepository)).start();
 	}
 	
+	/**
+	 * Service steps are validated for null entries
+	 * Step Ids are validated for their presence in DB
+	 * 
+	 * Existing step ids for the specified counter which already exist in DB are filtered out
+	 * 
+	 * @param counterId
+	 * @param steps
+	 * @return New valid step ids for counter
+	 */
 	private List<Long> getStepIdstoBeAdded(Long counterId, List<ServiceStep> steps) {
 		steps.forEach(step -> {
 			if(Objects.isNull(step.getId()))
@@ -172,11 +231,23 @@ public class CounterServiceImpl extends BaseServiceImpl implements CounterServic
 		return stepsIdList.stream().filter(id -> !stepIds1.contains(id)).collect(Collectors.toList());
 	}
 	
+	/**
+	 * counter operator id is matched against passed userId, exception is thrown if they don't match
+	 * 
+	 * @param userId
+	 * @param counter
+	 */
 	private void checkOperatorAccess(String userId, Counter counter) {
 		if(!counter.getCurrentOperator().equals(userId))
 			throw new BusinessRuntimeException(ApplicationConstants.ERR_ACCESS_DENIED);
 	}
 	
+	/**
+	 * A user id is matched against DB records, if there is no match exception is thrown
+	 * 
+	 * @param operatorId
+	 * @return
+	 */
 	private User getOperator(String operatorId) {
 		User operator = userService.getUser(operatorId);
 		if(Objects.isNull(operator))
@@ -184,11 +255,23 @@ public class CounterServiceImpl extends BaseServiceImpl implements CounterServic
 		return operator;
 	}
 	
+	/**
+	 * branch manager id is matched against passed userId, exception is thrown if they don't match
+	 * 
+	 * @param userId
+	 * @param branch
+	 */
 	private void checkAccess(String userId, Branch branch) {
 		if(!branch.getManagerId().equals(userId))
 			throw new BusinessRuntimeException(ApplicationConstants.ERR_ACCESS_DENIED);
 	}
 	
+	/**
+	 * branch is fetched from JVM cache against passed branchId, exception is thrown if no such branch exists in cache
+	 * 
+	 * @param branchId
+	 * @return branch instance if existing
+	 */
 	private Branch getBranch(Long branchId) {
 		Branch branch =  branchService.getBranch(branchId);
 		if(Objects.isNull(branch))
@@ -196,8 +279,15 @@ public class CounterServiceImpl extends BaseServiceImpl implements CounterServic
 		return branch;
 	}
 	
+	/**
+	 * counter is fetched from branch instance retrieved from JVM cache, exception is thrown if found none
+	 * 
+	 * @param branchId
+	 * @param counterNumber
+	 * @return counter instance if existing
+	 */
 	private Counter getCounter(Long branchId, Integer counterNumber) {
-		Counter counter = branchService.getBranch(branchId).getCounter(counterNumber);
+		Counter counter = getBranch(branchId).getCounter(counterNumber);
 		if(Objects.isNull(counter))
 			throw new BusinessRuntimeException(ApplicationConstants.ERR_COUNTER_NOT_EXIST);
 		return counter;

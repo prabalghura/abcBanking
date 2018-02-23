@@ -41,6 +41,10 @@ public class RoleServiceImpl extends BaseServiceImpl implements RoleService{
 		return roleRepository.checkAccess(userId, role) != 0;
 	}
 	
+	/**
+	 * userId is validated against DB, exception is thrown if found none
+	 * roles are fetched from DB and returned.
+	 */
 	@Override
 	public List<Role> getUserRoles(String userId) {
 		if(!userRepository.exists(userId))
@@ -48,6 +52,12 @@ public class RoleServiceImpl extends BaseServiceImpl implements RoleService{
 		return roleRepository.getRolesForUser(userId);
 	}
 
+	/**
+	 * Access is checked 
+	 * userId is validated against DB, exception is thrown if found none
+	 * 
+	 * only roles which exist in DB and currently not possessed by user are updated in DB.
+	 */
 	@Override
 	@Transactional(readOnly = false)
 	public List<Role> assignRolesToUser(String assignerId, String userId, List<Role> roles) {
@@ -74,6 +84,9 @@ public class RoleServiceImpl extends BaseServiceImpl implements RoleService{
 		return getUserRoles(userId);
 	}
 	
+	/**
+	 * All roles are fetched from DB and returned
+	 */
 	@Override
 	public List<Role> getAllRoles() {
 		return roleRepository.findAll();

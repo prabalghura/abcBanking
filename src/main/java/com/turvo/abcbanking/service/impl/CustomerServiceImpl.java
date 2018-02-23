@@ -23,6 +23,10 @@ public class CustomerServiceImpl extends BaseServiceImpl implements CustomerServ
 	@Autowired
 	CustomerRepository customerRepository;
 	
+	/**
+	 * Customer instance is fetched from DB and returned
+	 * Exception is thrown if found none.
+	 */
 	@Override
 	public Customer getCustomer(Long accountNumber) {
 		Customer customer = customerRepository.findOne(accountNumber);
@@ -31,6 +35,9 @@ public class CustomerServiceImpl extends BaseServiceImpl implements CustomerServ
 		return customer;
 	}
 
+	/**
+	 * Passed Customer instance is persisted in DB and returned
+	 */
 	@Override
 	public Customer createNewCustomer(Customer customer) {
 		return customerRepository.save(customer);

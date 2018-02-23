@@ -36,6 +36,4 @@ public class CustomerServiceContainer {
 	public void setServices(List<Service> services) {
 		this.services = services;
 	}
-	
-	
 }

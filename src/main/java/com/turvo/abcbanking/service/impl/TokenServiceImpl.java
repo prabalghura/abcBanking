@@ -42,11 +42,28 @@ public class TokenServiceImpl extends BaseServiceImpl implements TokenService {
 	@Autowired
 	TokenWorkflowRepository tokenWorkflowRepository;
 	
+	/**
+	 * This is 2 of 3 frequent operations in entire application which involves DB update
+	 * But because of the way counter queues are maintained in application we need to wait for DB update to return result 
+	 * therefore both DB updates are made synchronously
+	 * 
+	 * Services are checked for being empty
+	 * Services are broken down into steps in an orderly fashion
+	 * Pending Token is made with display number fetched from branch instance's token generator
+	 * Token is saved synchronously in DB
+	 * 
+	 * Workflow steps are made based on services requested
+	 * First step is assigned to best counter in branch and steps are saved in DB synchronously
+	 * counter in branch cache is updated
+	 * 
+	 * And token is returned
+	 */
 	@Override
 	@Transactional(readOnly = false)
 	public Token createToken(Customer customer, Long branchId, List<Service> services) {
 		if(Objects.isNull(services) || services.isEmpty())
 			throw new BusinessRuntimeException(ApplicationConstants.ERR_EMPTY_SERVICE_TOKEN);
+		//TODO: fetch services from branch provided services expecting just service id to be present in input
 		List<ServiceStep> steps = new ArrayList<>();
 		services.forEach(service -> steps.addAll(service.getSteps()));
 		
@@ -57,12 +74,6 @@ public class TokenServiceImpl extends BaseServiceImpl implements TokenService {
 		token.setNumber(branch.getTokenNumber());
 		token.setStatus(TokenStatus.PENDING);
 		
-		/**
-		 * Bottleneck #1
-		 * this is the bottleneck need to wait everytime this operation executes 
-		 * rest all high volume db operations can be passed to a queue but this can't be
-		 * because I need token Id for further operations
-		 */
 		token = tokenRepository.save(token);
 		
 		List<TokenWorkflow> workflowSteps = new ArrayList<>();
@@ -113,8 +124,16 @@ public class TokenServiceImpl extends BaseServiceImpl implements TokenService {
 	}
 	
 	/**
-	 * For marking a token and removing it from counter queue
-	 * DB update is asynchronous
+	 * This is 3 of 3 frequent operations in entire application which involves DB update
+	 * However, because of the way counter queues are maintained in application we need not wait for DB update to complete
+	 * That's why DB update is made asynchronously
+	 * 
+	 * Branch's all counter queues are searched for token exception is thrown if none found.
+	 * If token is found, access check is performed to check if operation executor is branch manager 
+	 * or operator of the counter to which token is assigned, exception is thrown if both cases fail
+	 * 
+	 * Token is removed from counter queue and counter is updated in JVM cache
+	 * token is marked with passed status CANCELLED/COMPLETED and asynchronous DB update is made
 	 * 
 	 * @param executorId
 	 * @param branchId
@@ -139,6 +158,12 @@ public class TokenServiceImpl extends BaseServiceImpl implements TokenService {
 		throw new BusinessRuntimeException(ApplicationConstants.ERR_TOKEN_NOT_EXIST);
 	}
 	
+	/**
+	 * Branch is fetched from JVM cache against passed branchId, exception is thrown if no such branch exists in cache
+	 * 
+	 * @param branchId
+	 * @return branch instance if existing
+	 */
 	private Branch getBranch(Long branchId) {
 		Branch branch =  branchService.getBranch(branchId);
 		if(Objects.isNull(branch))

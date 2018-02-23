@@ -34,6 +34,12 @@ public class UserServiceImpl extends BaseServiceImpl implements UserService{
 		return userRepository.findOne(id);
 	}
 
+	/**
+	 * Access is checked
+	 * if userId exists already in DB exception is thrown
+	 * 
+	 * User is created and returned
+	 */
 	@Override
 	@Transactional(readOnly = false)
 	public User createNewUser(String creatorId, User user) {
