@@ -1,12 +1,11 @@
-/**
- * 
- */
 package com.turvo.abcbanking.service.impl;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -47,12 +46,32 @@ public class UserServiceImplTest {
 	public ExpectedException exception = ExpectedException.none();
 	
 	/**
+	 * Stubbing all dependencies at one place
+	 */
+	@Before
+	public final void stubDependencies() {
+		User user = new User();
+		user.setUserId("userId");
+		user.setName("User");
+		List<User> userList = new ArrayList<>();
+		userList.add(user);
+		Mockito.when(userRepository.findAll()).thenReturn(userList);
+		Mockito.when(userRepository.findOne("userId")).thenReturn(user);
+		Mockito.when(roleService.checkAccessForUser("userIdWithAccess", ApplicationConstants.ROLE_ADD_NEW_USER)).thenReturn(true);
+		Mockito.when(userRepository.exists("existingUserId")).thenReturn(true);
+	}
+	
+	/**
 	 * Test method for {@link com.turvo.abcbanking.service.impl.UserServiceImpl#getAllUsers()}.
 	 */
 	@Test
 	public final void testGetAllUsers() {
-		Mockito.when(userRepository.findAll()).thenReturn(new ArrayList<>());
 		Assert.assertFalse("User list should not be null", Objects.isNull(userService.getAllUsers()));
+		Assert.assertFalse("User list should contain stubbed instance", Objects.isNull(userService.getAllUsers().get(0)));
+		Assert.assertTrue("User instance should be same as stubbed instance", userService.getAllUsers().get(0)
+				.getName().equalsIgnoreCase("User"));
+		Assert.assertTrue("User instance should be same as stubbed instance", userService.getAllUsers().get(0)
+				.getUserId().equalsIgnoreCase("userId"));
 	}
 
 	/**
@@ -60,8 +79,9 @@ public class UserServiceImplTest {
 	 */
 	@Test
 	public final void testGetUser() {
-		Mockito.when(userRepository.findOne("userId")).thenReturn(new User());
 		Assert.assertFalse("User should not be null", Objects.isNull(userService.getUser("userId")));
+		Assert.assertTrue("User instance should be same as stubbed instance", userService.getUser("userId").getName().
+				equalsIgnoreCase("User"));
 	}
 
 	/**
@@ -71,16 +91,9 @@ public class UserServiceImplTest {
 	public final void testCreateNewUserWithoutAccess() {
 		exception.expect(BusinessRuntimeException.class);
 		exception.expectMessage(ApplicationConstants.ERR_ACCESS_DENIED);
-		userService.createNewUser("userId", new User());
-	}
-	
-	/**
-	 * Test method for {@link com.turvo.abcbanking.service.impl.UserServiceImpl#createNewUser(java.lang.String, com.turvo.abcbanking.model.User)}.
-	 */
-	@Test
-	public final void testCreateNewUserValid() {
-		Mockito.when(roleService.checkAccessForUser("userId", ApplicationConstants.ROLE_ADD_NEW_USER)).thenReturn(true);
-		userService.createNewUser("userId", new User());
+		User user = new User();
+		user.setUserId("newUserId");
+		userService.createNewUser("userIdWithouAccess", user);
 	}
 	
 	/**
@@ -88,12 +101,20 @@ public class UserServiceImplTest {
 	 */
 	@Test
 	public final void testCreateNewUserRedundantUserId() {
-		Mockito.when(roleService.checkAccessForUser("userId", ApplicationConstants.ROLE_ADD_NEW_USER)).thenReturn(true);
-		Mockito.when(userRepository.exists("existingUserId")).thenReturn(true);
 		exception.expect(BusinessRuntimeException.class);
 		exception.expectMessage(ApplicationConstants.ERR_USER_ID_EXIST);
 		User user = new User();
 		user.setUserId("existingUserId");
-		userService.createNewUser("userId", user);
+		userService.createNewUser("userIdWithAccess", user);
+	}
+	
+	/**
+	 * Test method for {@link com.turvo.abcbanking.service.impl.UserServiceImpl#createNewUser(java.lang.String, com.turvo.abcbanking.model.User)}.
+	 */
+	@Test
+	public final void testCreateNewUserValid() {
+		User user = new User();
+		user.setUserId("newUserId");
+		userService.createNewUser("userIdWithAccess", user);
 	}
 }
