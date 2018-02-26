@@ -1,12 +1,12 @@
-/**
- * 
- */
 package com.turvo.abcbanking.service.impl;
+
+import static org.mockito.Matchers.anyString;
 
 import java.util.ArrayList;
 import java.util.Objects;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -49,13 +49,33 @@ public class RoleServiceImplTest {
 	@Rule
 	public ExpectedException exception = ExpectedException.none();
 	
+	// These are configurable settings
+	
+	// stubbedUserId and nonExistingUserId should be mutually exclusive
+	String stubbedUserId = "userIdWithAccess";
+	String nonExistingUserId = "userIdWithoutAccess";
+	
+	String assignedRole = ApplicationConstants.ROLE_ASSIGN_ROLES;
+	
+	/**
+	 * Stubbing all dependencies at one place
+	 */
+	@Before
+	public final void stubDependencies() {
+		Mockito.when(roleRepository.checkAccess(anyString(), anyString())).thenReturn(0);
+		Mockito.when(roleRepository.checkAccess(stubbedUserId, assignedRole)).thenReturn(1);
+		Mockito.when(userRepository.exists(anyString())).thenReturn(false);
+		Mockito.when(userRepository.exists(stubbedUserId)).thenReturn(true);
+		Mockito.when(roleRepository.getRolesForUser(stubbedUserId)).thenReturn(new ArrayList<>());
+		Mockito.when(roleRepository.findAll()).thenReturn(new ArrayList<>());
+	}
+	
 	/**
 	 * Test method for {@link com.turvo.abcbanking.service.impl.RoleServiceImpl#checkAccessForUser(java.lang.String, java.lang.String)}.
 	 */
 	@Test
 	public final void testCheckAccessForUserIfAbsent() {
-		Mockito.when(roleRepository.checkAccess("userId", "role")).thenReturn(0);
-		Assert.assertFalse("Access should not be present", roleService.checkAccessForUser("userId", "role"));
+		Assert.assertFalse("Access should not be present", roleService.checkAccessForUser(nonExistingUserId, assignedRole));
 	}
 	
 	/**
@@ -63,8 +83,7 @@ public class RoleServiceImplTest {
 	 */
 	@Test
 	public final void testCheckAccessForUserIfPresent() {
-		Mockito.when(roleRepository.checkAccess("userId", "role")).thenReturn(1);
-		Assert.assertTrue("Access should not be present", roleService.checkAccessForUser("userId", "role"));
+		Assert.assertTrue("Access should be present", roleService.checkAccessForUser(stubbedUserId, assignedRole));
 	}
 
 	/**
@@ -74,7 +93,7 @@ public class RoleServiceImplTest {
 	public final void testGetUserRolesInvalidUser() {
 		exception.expect(BusinessRuntimeException.class);
 		exception.expectMessage(ApplicationConstants.ERR_USER_NOT_EXIST);
-		roleService.getUserRoles("userId");
+		roleService.getUserRoles(nonExistingUserId);
 	}
 	
 	/**
@@ -82,9 +101,7 @@ public class RoleServiceImplTest {
 	 */
 	@Test
 	public final void testGetUserRolesValid() {
-		Mockito.when(userRepository.exists("userId")).thenReturn(true);
-		Mockito.when(roleRepository.getRolesForUser("userId")).thenReturn(new ArrayList<>());
-		Assert.assertFalse("User roles should not be null", Objects.isNull(roleService.getUserRoles("userId")));
+		Assert.assertFalse("User roles should not be null", Objects.isNull(roleService.getUserRoles(stubbedUserId)));
 	}
 
 	/**
@@ -94,7 +111,7 @@ public class RoleServiceImplTest {
 	public final void testAssignRolesToUserWithoutAccess() {
 		exception.expect(BusinessRuntimeException.class);
 		exception.expectMessage(ApplicationConstants.ERR_ACCESS_DENIED);
-		roleService.assignRolesToUser("assignerId", "userId", new ArrayList<>());
+		roleService.assignRolesToUser(nonExistingUserId, nonExistingUserId, new ArrayList<>());
 	}
 	
 	/**
@@ -102,10 +119,9 @@ public class RoleServiceImplTest {
 	 */
 	@Test
 	public final void testAssignRolesToUserInvalidUser() {
-		Mockito.when(roleRepository.checkAccess("assignerId", ApplicationConstants.ROLE_ASSIGN_ROLES)).thenReturn(1);
 		exception.expect(BusinessRuntimeException.class);
 		exception.expectMessage(ApplicationConstants.ERR_USER_NOT_EXIST);
-		roleService.assignRolesToUser("assignerId", "userId", new ArrayList<>());
+		roleService.assignRolesToUser(stubbedUserId, nonExistingUserId, new ArrayList<>());
 	}
 	
 	/**
@@ -113,9 +129,7 @@ public class RoleServiceImplTest {
 	 */
 	@Test
 	public final void testAssignRolesToUserValid() {
-		Mockito.when(roleRepository.checkAccess("assignerId", ApplicationConstants.ROLE_ASSIGN_ROLES)).thenReturn(1);
-		Mockito.when(userRepository.exists("userId")).thenReturn(true);
-		roleService.assignRolesToUser("assignerId", "userId", new ArrayList<>());
+		roleService.assignRolesToUser(stubbedUserId, stubbedUserId, new ArrayList<>());
 	}
 
 	/**
@@ -123,7 +137,6 @@ public class RoleServiceImplTest {
 	 */
 	@Test
 	public final void testGetAllRoles() {
-		Mockito.when(roleRepository.findAll()).thenReturn(new ArrayList<>());
 		Assert.assertFalse("Roles should not be null", Objects.isNull(roleService.getAllRoles()));
 	}
 }
