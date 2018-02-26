@@ -182,7 +182,7 @@ public class CounterServiceImpl extends BaseServiceImpl implements CounterServic
 	@Override
 	@Transactional(readOnly = false)
 	public void serviceFirstCounter(String executorId, Long branchId, Integer counterNumber, String comments) {
-		Counter counter = branchService.getBranch(branchId).getCounter(counterNumber);
+		Counter counter = getCounter(branchId, counterNumber);
 		checkOperatorAccess(executorId, counter);
 		Token token = counter.pullToken();
 		branchService.updateCounter(counter);
@@ -216,8 +216,7 @@ public class CounterServiceImpl extends BaseServiceImpl implements CounterServic
 				throw new BusinessRuntimeException(ApplicationConstants.ERR_INVALID_SERVICE_STEP_ID);
 		});
 		Set<Long> stepIds = steps.stream().map(ServiceStep::getId).collect(Collectors.toSet());
-		List<Long> stepsIdList = new ArrayList<>();
-		stepIds.forEach(stepsIdList::add);
+		List<Long> stepsIdList = new ArrayList<>(stepIds);
 		
 		List<ServiceStep> dbSteps = serviceStepRepository.findByIdIn(stepsIdList);
 		
