@@ -1,11 +1,11 @@
 package com.turvo.abcbanking.service.impl;
 
-import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 import java.util.function.Predicate;
 
 import org.junit.Assert;
@@ -80,10 +80,11 @@ public class BranchServiceImplTest {
 	String existingUserId = "validUserId";
 	String nonExistentUserId = "invalidUserId";
 	
-	// commonStepId & distinctStepIds should have mutually exclusive values
+	// commonStepId, nonExistingStepId & distinctStepIds should have mutually exclusive values
 	Long commonStepId = 1L;
 	// distinctStepIds should have greater than or equal elements as stubbedRegularCounterNumbers & stubbedPremiumCounterNumbers
 	List<Long> distinctStepIds = Arrays.asList(2L, 3L);
+	Long nonExistingStepId = 4L;
 	
 	// stubbedRegularCounterNumbers, stubbedPremiumCounterNumbers & nonExistingCounterNumbers should have unique mutually exclusive values
 	List<Integer> stubbedRegularCounterNumbers = Arrays.asList(1, 2);
@@ -137,7 +138,7 @@ public class BranchServiceImplTest {
 		Mockito.when(userService.getUser(existingUserId)).thenReturn(new User());
 		Mockito.when(roleService.checkAccessForUser(userWithAccess, ApplicationConstants.ROLE_ADD_NEW_BRANCH)).thenReturn(true);
 		Mockito.when(branchRepository.saveAndFlush(any(Branch.class))).then(AdditionalAnswers.returnsFirstArg());
-		branchService.getAllBranches();
+		branchService.reloadEntireCache();
 	}
 	
 	/**
@@ -276,10 +277,6 @@ public class BranchServiceImplTest {
 		
 		branch = branchService.updateBranch(stubbedBranchManagerId, stubbedBranchId);
 		Assert.assertTrue("After updation branch should serve service updated in DB", branch.getRegularServices().stream().anyMatch(service1 -> service1.getId() == 1L));
-		
-		// resetting cache
-		Mockito.when(serviceRepository.getServicesForBranch(stubbedBranchId, CustomerType.REGULAR)).thenReturn(new ArrayList<>());
-		branchService.updateBranch(stubbedBranchManagerId, stubbedBranchId);
 	}
 	
 	/**
@@ -338,12 +335,6 @@ public class BranchServiceImplTest {
 		
 		branch = branchService.updateBranch(existingUserId, stubbedBranchId);
 		Assert.assertTrue("After updation branch should serve service updated in DB", branch.getRegularServices().stream().anyMatch(service1 -> service1.getId() == 1L));
-		
-		// resetting cache back to original manager in cache otherwise it may impact other test cases ran after it
-		Mockito.when(serviceRepository.getServicesForBranch(stubbedBranchId, CustomerType.REGULAR)).thenReturn(new ArrayList<>());
-		branch = branchRepository.findOne(stubbedBranchId);
-		branch.setManagerId(stubbedBranchManagerId);
-		branchService.updateBranch(stubbedBranchManagerId, stubbedBranchId);
 	}
 
 	/**
@@ -359,10 +350,6 @@ public class BranchServiceImplTest {
 		
 		counter = branchService.getBranch(stubbedBranchId).getCounter(stubbedRegularCounterNumbers.get(0));
 		Assert.assertFalse("Counter should have token reflected in cache", counter.getTokens().size() == 0);
-		
-		// resetting cache to initial state.
-		counter.pullToken();
-		branchService.updateCounter(counter);
 	}
 	
 	/**
@@ -378,9 +365,6 @@ public class BranchServiceImplTest {
 		
 		counter = branchService.getBranch(stubbedBranchId).getCounter(nonExistingCounterNumbers.get(0));
 		Assert.assertNotNull("Branch should now have non existing counter because it has been created");
-		
-		// resetting the cache
-		branchService.reloadEntireCache();
 	}
 	
 	/**
@@ -400,10 +384,111 @@ public class BranchServiceImplTest {
 	 * Test method for {@link com.turvo.abcbanking.service.impl.BranchServiceImpl#getBestCounter(java.lang.Long, com.turvo.abcbanking.model.CustomerType, java.lang.Long)}.
 	 */
 	@Test
-	public final void testGetBestCounter() {
-		fail("Not yet implemented"); // TODO
+	public final void testGetBestCounter_InvalidStep() {
+		Counter counter = branchService.getBestCounter(stubbedBranchId, CustomerType.REGULAR, nonExistingStepId);
+		Assert.assertNull("No regular counter should be serving non stubbed service step", counter);
+		counter = branchService.getBestCounter(stubbedBranchId, CustomerType.PREMIUM, nonExistingStepId);
+		Assert.assertNull("No premium counter should be serving non stubbed service step", counter);
+	}
+	
+	/**
+	 * Test method for {@link com.turvo.abcbanking.service.impl.BranchServiceImpl#getBestCounter(java.lang.Long, com.turvo.abcbanking.model.CustomerType, java.lang.Long)}.
+	 */
+	@Test
+	public final void testGetBestCounter_InvalidBranch() {
+		exception.expect(BusinessRuntimeException.class);
+		exception.expectMessage(ApplicationConstants.ERR_BRANCH_NOT_EXIST);
+		branchService.getBestCounter(nonExistingBranchId, CustomerType.REGULAR, commonStepId);
+	}
+	
+	/**
+	 * Test method for {@link com.turvo.abcbanking.service.impl.BranchServiceImpl#getBestCounter(java.lang.Long, com.turvo.abcbanking.model.CustomerType, java.lang.Long)}.
+	 */
+	@Test
+	public final void testGetBestCounter_CommonStepRegular() {
+		Counter counter = branchService.getBestCounter(stubbedBranchId, CustomerType.REGULAR, commonStepId);
+		Assert.assertTrue("First regular counter should be returned", counter.getNumber() == stubbedRegularCounterNumbers.get(0));
+	}
+	
+	/**
+	 * Test method for {@link com.turvo.abcbanking.service.impl.BranchServiceImpl#getBestCounter(java.lang.Long, com.turvo.abcbanking.model.CustomerType, java.lang.Long)}.
+	 */
+	@Test
+	public final void testGetBestCounter_CommonStepRegularRepeated() {
+		Counter counter;
+		for(int i=0;i<50;i++) {
+			counter = branchService.getBestCounter(stubbedBranchId, CustomerType.REGULAR, commonStepId);
+			Assert.assertTrue("Regular Counters should be returned in a round robin fashion", 
+					counter.getNumber() == stubbedRegularCounterNumbers.get(i%stubbedRegularCounterNumbers.size()));
+			counter.addToken(new Token());
+			branchService.updateCounter(counter);
+		}
+	}
+	
+	/**
+	 * Test method for {@link com.turvo.abcbanking.service.impl.BranchServiceImpl#getBestCounter(java.lang.Long, com.turvo.abcbanking.model.CustomerType, java.lang.Long)}.
+	 */
+	@Test
+	public final void testGetBestCounter_DistinctStepRegularRepeated() {
+		Counter counter;
+		Long randomDistinctStepId = distinctStepIds.get(new Random().nextInt(distinctStepIds.size()));
+		List<Counter> counters = new ArrayList<>();
+		for(int i=0;i<50;i++) {
+			counter = branchService.getBestCounter(stubbedBranchId, CustomerType.REGULAR, randomDistinctStepId);
+			counter.addToken(new Token());
+			counters.add(branchService.updateCounter(counter));
+		}
+		Integer counterNumber = counters.get(0).getNumber();
+		Assert.assertTrue("All the tokens should be assigned to same counter", counters.stream()
+				.allMatch(counter1 -> counter1.getNumber() == counterNumber));
+		Assert.assertTrue("Assigned counter should be a regular counter", stubbedRegularCounterNumbers.stream()
+				.anyMatch(number -> number == counterNumber));
+	}
+	
+	/**
+	 * Test method for {@link com.turvo.abcbanking.service.impl.BranchServiceImpl#getBestCounter(java.lang.Long, com.turvo.abcbanking.model.CustomerType, java.lang.Long)}.
+	 */
+	@Test
+	public final void testGetBestCounter_CommonStepPremium() {
+		Counter counter = branchService.getBestCounter(stubbedBranchId, CustomerType.PREMIUM, commonStepId);
+		Assert.assertTrue("First premium counter should be returned", counter.getNumber() == stubbedPremiumCounterNumbers.get(0));
 	}
 
+	/**
+	 * Test method for {@link com.turvo.abcbanking.service.impl.BranchServiceImpl#getBestCounter(java.lang.Long, com.turvo.abcbanking.model.CustomerType, java.lang.Long)}.
+	 */
+	@Test
+	public final void testGetBestCounter_CommonStepPremiumRepeated() {
+		Counter counter;
+		for(int i=0;i<50;i++) {
+			counter = branchService.getBestCounter(stubbedBranchId, CustomerType.PREMIUM, commonStepId);
+			Assert.assertTrue("Premium Counters should be returned in a round robin fashion", 
+					counter.getNumber() == stubbedPremiumCounterNumbers.get(i%stubbedPremiumCounterNumbers.size()));
+			counter.addToken(new Token());
+			branchService.updateCounter(counter);
+		}
+	}
+	
+	/**
+	 * Test method for {@link com.turvo.abcbanking.service.impl.BranchServiceImpl#getBestCounter(java.lang.Long, com.turvo.abcbanking.model.CustomerType, java.lang.Long)}.
+	 */
+	@Test
+	public final void testGetBestCounter_DistinctStepPremiumRepeated() {
+		Counter counter;
+		Long randomDistinctStepId = distinctStepIds.get(new Random().nextInt(distinctStepIds.size()));
+		List<Counter> counters = new ArrayList<>();
+		for(int i=0;i<50;i++) {
+			counter = branchService.getBestCounter(stubbedBranchId, CustomerType.PREMIUM, randomDistinctStepId);
+			counter.addToken(new Token());
+			counters.add(branchService.updateCounter(counter));
+		}
+		Integer counterNumber = counters.get(0).getNumber();
+		Assert.assertTrue("All the tokens should be assigned to same counter", counters.stream()
+				.allMatch(counter1 -> counter1.getNumber() == counterNumber));
+		Assert.assertTrue("Assigned counter should be a premium counter", stubbedPremiumCounterNumbers.stream()
+				.anyMatch(number -> number == counterNumber));
+	}
+	
 	/**
 	 * Test method for {@link com.turvo.abcbanking.service.impl.BranchServiceImpl#reloadEntireCache()}.
 	 */

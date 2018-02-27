@@ -162,6 +162,8 @@ public class BranchServiceImpl extends BaseServiceImpl implements BranchService 
 		List<Counter> counters;
 		List<Counter> counters1 = new ArrayList<>();
 		Branch branch = getBranch(branchId);
+		if(Objects.isNull(branch))
+			throw new BusinessRuntimeException(ApplicationConstants.ERR_BRANCH_NOT_EXIST);
 		if(type == CustomerType.REGULAR)
 			counters = branch.getRegularCounters();
 		else

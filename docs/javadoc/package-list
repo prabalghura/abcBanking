@@ -1,0 +1,9 @@
+com.turvo.abcbanking
+com.turvo.abcbanking.controller
+com.turvo.abcbanking.exception
+com.turvo.abcbanking.model
+com.turvo.abcbanking.repository
+com.turvo.abcbanking.repository.impl
+com.turvo.abcbanking.service
+com.turvo.abcbanking.service.impl
+com.turvo.abcbanking.utils
