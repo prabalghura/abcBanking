@@ -130,6 +130,8 @@ public class BranchServiceImpl extends BaseServiceImpl implements BranchService 
 	@Override
 	public Branch updateBranch(String managerId, Long branchId) {
 		Branch branch = branchRepository.findOne(branchId);
+		if(Objects.isNull(branch))
+			throw new BusinessRuntimeException(ApplicationConstants.ERR_BRANCH_NOT_EXIST);
 		if(branch.getManagerId().equals(managerId))
 			return updateBranch(branchId);
 		else
@@ -144,6 +146,8 @@ public class BranchServiceImpl extends BaseServiceImpl implements BranchService 
 	@Override
 	public Counter updateCounter(Counter counter) {
 		Branch branch = getBranch(counter.getBranchId());
+		if(Objects.isNull(branch))
+			throw new BusinessRuntimeException(ApplicationConstants.ERR_BRANCH_NOT_EXIST);
 		branch.updateCounter(counter);
 		return updateBranch(branch).getCounter(counter.getNumber());
 	}
