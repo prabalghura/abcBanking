@@ -1,7 +1,9 @@
 # abcBanking
 API to provide managing token queues in a Banking system
 
-API documentation available at https://prabalghura.github.io/abcBanking/
+API documentation available at https://prabalghura.github.io/abcBanking/javadoc
+
+Test coverage report available at https://prabalghura.github.io/abcBanking/cobertura/index.html
 
 Below is the DB Model for the solution:
 
