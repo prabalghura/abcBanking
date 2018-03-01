@@ -96,7 +96,7 @@ public class BranchServiceImpl extends BaseServiceImpl implements BranchService 
 	@Transactional(readOnly = false)
 	public Branch createNewBranch(String creatorId, Branch branch) {
 		checkAccess(creatorId, ApplicationConstants.ROLE_ADD_NEW_BRANCH);
-		if(Objects.isNull(userService.getUser(branch.getManagerId())))
+		if(!roleService.checkAccessForUser(branch.getManagerId(), ApplicationConstants.ROLE_MANAGER))
 			throw new BusinessRuntimeException(ApplicationConstants.ERR_MANAGER_NOT_EXIST);
 		branch.setLastModifiedBy(creatorId);
 		branch = updateBranch(getBranchFull(branchRepository.saveAndFlush(branch)));
@@ -112,7 +112,7 @@ public class BranchServiceImpl extends BaseServiceImpl implements BranchService 
 	@Transactional(readOnly = false)
 	public Branch assignManager(String assignerId, Long branchId, String managerId) {
 		checkAccess(assignerId, ApplicationConstants.ROLE_ADD_NEW_BRANCH);
-		if(Objects.isNull(userService.getUser(managerId)))
+		if(!roleService.checkAccessForUser(managerId, ApplicationConstants.ROLE_MANAGER))
 			throw new BusinessRuntimeException(ApplicationConstants.ERR_MANAGER_NOT_EXIST);
 		Branch branch = getBranch(branchId);
 		if(Objects.isNull(branch))

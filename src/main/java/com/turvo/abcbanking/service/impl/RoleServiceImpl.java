@@ -38,6 +38,8 @@ public class RoleServiceImpl extends BaseServiceImpl implements RoleService{
 
 	@Override
 	public Boolean checkAccessForUser(String userId, String role) {
+		if(!userRepository.exists(userId))
+			return false;
 		return roleRepository.checkAccess(userId, role) != 0;
 	}
 	

@@ -41,4 +41,6 @@ public class ApplicationConstants {
 	public static final String ROLE_ADD_NEW_BRANCH = "ADD_NEW_BRANCH";
 	public static final String ROLE_ADD_NEW_USER = "ADD_NEW_USER";
 	public static final String ROLE_DEFINE_SERVICE = "DEFINE_SERVICE";
+	public static final String ROLE_MANAGER = "MANAGER";
+	public static final String ROLE_OPERATOR = "OPERATOR";
 }

@@ -27,7 +27,6 @@ import com.turvo.abcbanking.service.BranchService;
 import com.turvo.abcbanking.service.CounterService;
 import com.turvo.abcbanking.service.UserService;
 import com.turvo.abcbanking.utils.ApplicationConstants;
-import com.turvo.abcbanking.utils.DBAsyncExecutor;
 
 /**
  * Service implementation for Counter operations
@@ -167,8 +166,6 @@ public class CounterServiceImpl extends BaseServiceImpl implements CounterServic
 	
 	/**
 	 * This is 1 of 3 frequent operations in entire application which involves DB update
-	 * However, because of the way counter queues are maintained in application we need not wait for DB update to complete
-	 * That's why DB update is made asynchronously
 	 * 
 	 * Inputs are validated
 	 * Operator access is checked
@@ -185,19 +182,23 @@ public class CounterServiceImpl extends BaseServiceImpl implements CounterServic
 		Counter counter = getCounter(branchId, counterNumber);
 		checkOperatorAccess(executorId, counter);
 		Token token = counter.pullToken();
-		branchService.updateCounter(counter);
 		
 		List<TokenWorkflow> steps1 = token.serviceAndGetNextPendingWorkFlowStep(comments, counter.getCurrentOperator());
 		
+		Counter nextCounter = null;
 		if(steps1.size()>1) {
 			Long stepId = steps1.get(1).getStepId();
-			Counter nextCounter = branchService.getBestCounter(branchId, token.getType(), stepId);
+			nextCounter = branchService.getBestCounter(branchId, token.getType(), stepId);
 			steps1.get(1).setCounterId(nextCounter.getId());
 			nextCounter.addToken(token);
 			
-			branchService.updateCounter(nextCounter);
 		}
-		new Thread(new DBAsyncExecutor<TokenWorkflow, TokenWorkflowRepository>(steps1, tokenWorkflowRepository)).start();
+		tokenWorkflowRepository.save(steps1);
+		tokenWorkflowRepository.flush();
+		branchService.updateCounter(counter);
+		if(steps1.size()>1) {
+			branchService.updateCounter(nextCounter);			
+		}
 	}
 	
 	/**
@@ -249,7 +250,7 @@ public class CounterServiceImpl extends BaseServiceImpl implements CounterServic
 	 */
 	private User getOperator(String operatorId) {
 		User operator = userService.getUser(operatorId);
-		if(Objects.isNull(operator))
+		if(!roleService.checkAccessForUser(operatorId, ApplicationConstants.ROLE_OPERATOR))
 			throw new BusinessRuntimeException(ApplicationConstants.ERR_OPERATOR_NOT_EXIST);
 		return operator;
 	}

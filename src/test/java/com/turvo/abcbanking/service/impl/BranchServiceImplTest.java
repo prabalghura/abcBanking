@@ -136,6 +136,7 @@ public class BranchServiceImplTest {
 		Mockito.when(branchRepository.findOne(stubbedBranchId)).thenReturn(branch);
 		Mockito.when(counterService.getBranchCountersFromDB(stubbedBranchId)).thenReturn(counters);
 		Mockito.when(userService.getUser(existingUserId)).thenReturn(new User());
+		Mockito.when(roleService.checkAccessForUser(existingUserId, ApplicationConstants.ROLE_MANAGER)).thenReturn(true);
 		Mockito.when(roleService.checkAccessForUser(userWithAccess, ApplicationConstants.ROLE_ADD_NEW_BRANCH)).thenReturn(true);
 		Mockito.when(branchRepository.saveAndFlush(any(Branch.class))).then(AdditionalAnswers.returnsFirstArg());
 		branchService.reloadEntireCache();

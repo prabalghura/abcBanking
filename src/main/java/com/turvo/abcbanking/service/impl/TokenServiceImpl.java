@@ -25,7 +25,6 @@ import com.turvo.abcbanking.repository.TokenWorkflowRepository;
 import com.turvo.abcbanking.service.BranchService;
 import com.turvo.abcbanking.service.TokenService;
 import com.turvo.abcbanking.utils.ApplicationConstants;
-import com.turvo.abcbanking.utils.DBAsyncExecutor;
 
 /**
  * Service implementation for Counter operations
@@ -126,11 +125,6 @@ public class TokenServiceImpl extends BaseServiceImpl implements TokenService {
 		
 		workflowSteps.set(0, workflowStep);
 		
-		
-		/**
-		 * Bottleneck #2
-		 * 
-		 */
 		workflowSteps = tokenWorkflowRepository.save(workflowSteps);
 		tokenWorkflowRepository.flush();
 		
@@ -156,8 +150,6 @@ public class TokenServiceImpl extends BaseServiceImpl implements TokenService {
 	
 	/**
 	 * This is 3 of 3 frequent operations in entire application which involves DB update
-	 * However, because of the way counter queues are maintained in application we need not wait for DB update to complete
-	 * That's why DB update is made asynchronously
 	 * 
 	 * Branch's all counter queues are searched for token exception is thrown if none found.
 	 * If token is found, access check is performed to check if operation executor is branch manager 
@@ -179,10 +171,10 @@ public class TokenServiceImpl extends BaseServiceImpl implements TokenService {
 			if(!Objects.isNull(token)) {
 				if(!branch.getManagerId().equals(executorId) && !counter.getCurrentOperator().equals(executorId))
 					throw new BusinessRuntimeException(ApplicationConstants.ERR_ACCESS_DENIED);
-				branchService.updateCounter(counter.removeToken(token));
 				token.setStatus(status);
 				
-				new Thread(new DBAsyncExecutor<Token, TokenRepository>(token, tokenRepository)).start();
+				tokenRepository.saveAndFlush(token);
+				branchService.updateCounter(counter.removeToken(token));
 				return;
 			}
 		}

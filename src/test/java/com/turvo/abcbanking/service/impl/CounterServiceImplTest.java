@@ -38,6 +38,7 @@ import com.turvo.abcbanking.repository.TokenRepository;
 import com.turvo.abcbanking.repository.TokenWorkflowRepository;
 import com.turvo.abcbanking.service.BranchService;
 import com.turvo.abcbanking.service.CounterService;
+import com.turvo.abcbanking.service.RoleService;
 import com.turvo.abcbanking.service.UserService;
 import com.turvo.abcbanking.utils.ApplicationConstants;
 
@@ -59,6 +60,9 @@ public class CounterServiceImplTest {
 	
 	@MockBean
 	UserService userService;
+	
+	@MockBean
+	RoleService roleService;
 	
 	@MockBean
 	CounterRepository counterRepository;
@@ -169,6 +173,8 @@ public class CounterServiceImplTest {
 		Mockito.when(userService.getUser(stubbedOperatorId)).thenReturn(new User());
 		Mockito.when(userService.getUser(stubbedBranchManagerId)).thenReturn(new User());
 		Mockito.when(userService.getUser(stubbedNewOperatorId)).thenReturn(new User());
+		Mockito.when(roleService.checkAccessForUser(stubbedOperatorId, ApplicationConstants.ROLE_OPERATOR)).thenReturn(true);
+		Mockito.when(roleService.checkAccessForUser(stubbedNewOperatorId, ApplicationConstants.ROLE_OPERATOR)).thenReturn(true);
 		Mockito.when(counterRepository.getMaxCounterNumber(stubbedBranchId)).thenReturn(stubbedCounterNumber);
 		Mockito.when(counterRepository.saveAndFlush(any(Counter.class))).then(AdditionalAnswers.returnsFirstArg());
 		Mockito.when(serviceStepRepository.findByIdIn(anyListOf(Long.class))).thenAnswer(new Answer<List<ServiceStep>>() {
