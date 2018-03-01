@@ -91,7 +91,7 @@ ConcurrentHashMap of Branches
 6. When a counter serves a token it is removed from head of counter's ConcurrentLinkedQueue of Tokens. Tokens workflow steps (minimum 1 maximum 2) are updated and token is assigned to next counter, if required.
 7. When a token is marked cancelled/completed within a branch (only branch manager or current operator of counter to which token is assigned can do this). All the counter queues within a branch are looped for searching the specified token. If found, token is removed from counter queue.
 
-4, 6, 7 are high-frequency operations requiring DB update but only 4 needs DB update to complete before proceeding further. So DB updates for operation 6, 7 are made asynchronously.
+4, 6, 7 are high-frequency operations requiring DB update.
 
 Rest all the operations are very straightforward, I have not included them here for brevity of this document. Please refer to source/documentation for them.
 
